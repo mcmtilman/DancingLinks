@@ -422,9 +422,39 @@ class BitSetTests: XCTestCase {
     func testFullSequence() {
         let set = BitSet(0 ... 63)
         
-        for (i, value) in set.enumerated() {
+        for (i, value) in zip(0 ... 63, set) {
             XCTAssertEqual(i, value)
         }
     }
 
+    func testIterateAndInsert() {
+        var set = BitSet(0 ..< 5)
+        
+        XCTAssertEqual(set.count, 5)
+        for (i, _) in set.enumerated() {
+            set.insert(i + 5)
+            if i > 4 {
+                XCTFail("Element inserted while iterating")
+            }
+        }
+        XCTAssertEqual(set.count, 10)
+    }
+    
+    func testIterateAndRemove() {
+        var set = BitSet(0 ..< 10)
+        var count = 0
+        
+        XCTAssertEqual(set.count, 10)
+        for (i, _) in set.enumerated() {
+            count += 1
+            if i < 5 {
+                set.remove(i + 5)
+            }
+        }
+        if count < 10 {
+            XCTFail("Element removed while iterating")
+        }
+        XCTAssertEqual(set.count, 5)
+    }
+    
 }
