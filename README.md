@@ -7,3 +7,7 @@ One implementation uses classes to represent the nodes. The other (and faster) a
 # Example
 
 Sudoku solver.
+
+# Requirements
+
+Swift 5.1
