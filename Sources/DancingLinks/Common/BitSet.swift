@@ -13,7 +13,7 @@
  */
 public struct BitSet: SetAlgebra {
     
-    // MARK: Static computed properties
+    // MARK: Constants
     
     /// Answer the maximum supported value.
     public static let max = Int.bitWidth - 1
