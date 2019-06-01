@@ -7,7 +7,7 @@
 
 
 /**
- BitSet implements a set of integers of type Int.
+ BitSet implements a set of elements of type Int.
  The elements are restricted to the range 0 ..< Int.bitWidth with enabled asserts.
  With disabled asserts, some results are not specified for values outside this range.
  */
