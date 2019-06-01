@@ -206,7 +206,7 @@ extension BitSet: ExpressibleByArrayLiteral {
  */
 extension BitSet: Sequence {
     
-    /// Iterates elements in increasing order of magnitude.
+    /// Iterates the elements in increasing order of magnitude.
     /// Ignores changes to the set while iterating.
     public struct BitSetIterator: IteratorProtocol {
         

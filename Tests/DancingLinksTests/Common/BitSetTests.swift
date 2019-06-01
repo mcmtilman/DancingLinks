@@ -422,7 +422,7 @@ class BitSetTests: XCTestCase {
     func testFullSequence() {
         let set = BitSet(0 ... 63)
         
-        for (i, value) in zip(0 ... 63, set) {
+        for (i, value) in set.enumerated() {
             XCTAssertEqual(i, value)
         }
     }
