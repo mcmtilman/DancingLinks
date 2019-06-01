@@ -179,7 +179,7 @@ public struct BitSet: SetAlgebra {
     
     // MARK: Private initializing
     
-    // Initializes the set with given bits.
+    // Initializes the set with given value.
     private init(value: Int) {
         self.value = value
     }
