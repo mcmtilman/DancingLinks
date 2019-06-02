@@ -124,12 +124,12 @@ public struct BitSet: SetAlgebra {
     }
     
     /// Extends this set with the other set.
-    mutating public func formUnion(_ other: BitSet) {
+    public mutating func formUnion(_ other: BitSet) {
         self = union(other)
     }
     
     /// Removes the other set from this set.
-    mutating public func subtract(_ other: BitSet) {
+    public mutating func subtract(_ other: BitSet) {
         self = subtracting(other)
     }
     
