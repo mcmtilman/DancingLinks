@@ -65,7 +65,7 @@ public struct BitSet: SetAlgebra {
         self.init(elements)
     }
     
-    // MARK: Testing
+    // MARK: Element testing
     
     /// Returns true if the element is in the set, false otherwise.
     /// Asserts that the element is inside the range.
@@ -208,19 +208,26 @@ extension BitSet: Sequence {
     
     /// Iterates the elements in increasing order of magnitude.
     /// Ignores changes to the set while iterating.
-    public struct BitSetIterator: IteratorProtocol {
+    public struct Iterator: IteratorProtocol {
+        
+        // MARK: Private stored properties
         
         // Bitset representation of successive elements (1, 2, 4, ...).
         // 'Incremented' on each iteration.
+        // Could be private, but then we can not use synthesized initializer.
         fileprivate var bitMask = 1
         
         // Successive elements (0, 1, 2, ...).
         // Incremented on each iteration.
+        // Could be private, but then we can not use synthesized initializer.
         fileprivate var element = 0
         
         // Value containing the bits yet to be processed.
+        // Could be private, but then we can not use synthesized initializer.
         fileprivate var value: Int
         
+        // MARK: Iterating
+
         /// Returns the next element in the set, or nil if we are at the end.
         public mutating func next() -> Int? {
             while value != 0 {
@@ -244,8 +251,8 @@ extension BitSet: Sequence {
     }
     
     /// Returns an iterator which ignores changes to this set after creation.
-    public func makeIterator() -> BitSetIterator {
-        BitSetIterator(value: value)
+    public func makeIterator() -> Iterator {
+        Iterator(value: value)
     }
     
 }
