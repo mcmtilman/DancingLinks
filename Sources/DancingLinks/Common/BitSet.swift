@@ -137,7 +137,7 @@ public struct BitSet: SetAlgebra {
     
     /// Returns the intersection of both sets.
     public func intersection(_ other: BitSet) -> BitSet {
-        BitSet(value: value & other.value)
+        Self(value: value & other.value)
     }
     
     /// Returns this set minus the other set.
@@ -147,12 +147,12 @@ public struct BitSet: SetAlgebra {
     
     /// Returns the symmetric difference of both sets (union - intersection).
     public func symmetricDifference(_ other: BitSet) -> BitSet {
-        BitSet(value: value ^ other.value)
+        Self(value: value ^ other.value)
     }
     
     /// Returns the union of both sets.
     public func union(_ other: BitSet) -> BitSet {
-        BitSet(value: value | other.value)
+        Self(value: value | other.value)
     }
     
     // MARK: Set testing
