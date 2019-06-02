@@ -114,66 +114,66 @@ public struct BitSet: SetAlgebra {
     // MARK: Mutating set operations
     
     /// Keeps the intersection with the other set.
-    public mutating func formIntersection(_ other: BitSet) {
+    public mutating func formIntersection(_ other: Self) {
         self = intersection(other)
     }
     
     /// Subtracts the intersection with the other set.
-    public mutating func formSymmetricDifference(_ other: BitSet) {
+    public mutating func formSymmetricDifference(_ other: Self) {
         self = symmetricDifference(other)
     }
     
     /// Extends this set with the other set.
-    public mutating func formUnion(_ other: BitSet) {
+    public mutating func formUnion(_ other: Self) {
         self = union(other)
     }
     
     /// Removes the other set from this set.
-    public mutating func subtract(_ other: BitSet) {
+    public mutating func subtract(_ other: Self) {
         self = subtracting(other)
     }
     
     // MARK: Set operations
     
     /// Returns the intersection of both sets.
-    public func intersection(_ other: BitSet) -> BitSet {
+    public func intersection(_ other: Self) -> Self {
         Self(value: value & other.value)
     }
     
     /// Returns this set minus the other set.
-    public func subtracting(_ other: BitSet) -> BitSet {
+    public func subtracting(_ other: Self) -> Self {
         intersection(symmetricDifference(other))
     }
     
     /// Returns the symmetric difference of both sets (union - intersection).
-    public func symmetricDifference(_ other: BitSet) -> BitSet {
+    public func symmetricDifference(_ other: Self) -> Self {
         Self(value: value ^ other.value)
     }
     
     /// Returns the union of both sets.
-    public func union(_ other: BitSet) -> BitSet {
+    public func union(_ other: Self) -> Self {
         Self(value: value | other.value)
     }
     
     // MARK: Set testing
     
     /// Returns true if this set is a strict subset of the other, false otherwise.
-    func isStrictSubset(of other: BitSet) -> Bool {
+    func isStrictSubset(of other: Self) -> Bool {
         isSubset(of: other) && self != other
     }
     
     /// Returns true if this set is a subset of the other, false otherwise.
-    public func isSubset(of other: BitSet) -> Bool {
+    public func isSubset(of other: Self) -> Bool {
         self == intersection(other)
     }
     
     /// Returns true if this set is a strict superset of the other, false otherwise.
-    func isStrictSuperset(of other: BitSet) -> Bool {
+    func isStrictSuperset(of other: Self) -> Bool {
         other.isStrictSubset(of: self)
     }
     
     /// Returns true if this set is a superset of the other, false otherwise.
-    public func isSuperset(of other: BitSet) -> Bool {
+    public func isSuperset(of other: Self) -> Bool {
         other.isSubset(of: self)
     }
     
