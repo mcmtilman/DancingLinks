@@ -214,16 +214,16 @@ extension BitSet: Sequence {
         
         // Bitset representation of successive elements (1, 2, 4, ...).
         // 'Incremented' on each iteration.
-        // Could be private, but then we can not use synthesized initializer.
+        // Could be private, but then the synthesized initializer is private too.
         fileprivate var bitMask = 1
         
         // Successive elements (0, 1, 2, ...).
         // Incremented on each iteration.
-        // Could be private, but then we can not use synthesized initializer.
+        // Could be private, but then the synthesized initializer is private too.
         fileprivate var element = 0
         
         // Value containing the bits yet to be processed.
-        // Could be private, but then we can not use synthesized initializer.
+        // Could be private, but then the synthesized initializer is private too.
         fileprivate var value: Int
         
         // MARK: Iterating
