@@ -97,46 +97,31 @@ public protocol DancingLinks {
 }
 
 /**
- Simplified solver variants.
+ Convenience solver variants.
  */
 extension DancingLinks {
     
-    /// Returns all solutions found.
-    func solveAll<G, S>(generator: G, strategy: SearchStrategy) -> [S] where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
+    /// Returns the solutions, optionally up to a certain limit.
+    func solve<G, S>(generator: G, strategy: SearchStrategy, limit: Int? = nil) -> [S] where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
         var solutions = [S]()
 
         solve(generator: generator, strategy: strategy) { (solution: S, state: SearchState) in
-            solutions.append(solution)
+            guard let limit = limit else { return solutions.append(solution) }
+            
+            if solutions.count < limit {
+                solutions.append(solution)
+            }
+            if solutions.count >= limit {
+                state.terminate()
+            }
         }
         
         return solutions
     }
     
-    /// Returns the first solution found, nil otherwise.
-    func solveAny<G, S>(generator: G, strategy: SearchStrategy) -> S? where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
-        var anySolution: S?
-        
-        solve(generator: generator, strategy: strategy) { (solution: S, state: SearchState) in
-            anySolution = solution
-            state.terminate()
-        }
-        
-        return anySolution
-    }
-    
-    /// Returns the single solution if there is exactly one, nil otherwise.
-    func solveStrict<G, S>(generator: G, strategy: SearchStrategy) -> S? where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
-        var strictSolution: S?
-
-        solve(generator: generator, strategy: strategy) { (solution: S, state: SearchState) in
-            guard strictSolution == nil else {
-                strictSolution = nil
-                return state.terminate()
-            }
-            strictSolution = solution
-        }
-        
-        return strictSolution
+    /// Returns the first solution found, or nil if no solution found.
+    func solve<G, S>(generator: G, strategy: SearchStrategy) -> S? where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
+        solve(generator: generator, strategy: strategy, limit: 1).first
     }
     
 }
