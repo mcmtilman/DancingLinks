@@ -61,7 +61,7 @@ public enum SearchStrategy {
 /**
  Search state.
  Can be terminated by the client. After termination the algorithm should stop searching.
- May contain additional information, such as statistics about the search.
+ Could contain additional information, such as statistics about the search.
  */
 public class SearchState {
     
