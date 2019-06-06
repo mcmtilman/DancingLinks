@@ -8,10 +8,13 @@
 import XCTest
 @testable import DancingLinks
 
-// Tests BitSets.
+/**
+ Tests BitSet.
+ */
 class BitSetTests: XCTestCase {
     
-   // MARK: Testing instantiation
+
+    // MARK: Testing instantiation
     
     func testEmptyBitSet() {
         let set = BitSet()
@@ -456,5 +459,63 @@ class BitSetTests: XCTestCase {
         }
         XCTAssertEqual(set.count, 5)
     }
+    
+}
+
+
+/**
+ For LinuxMain.
+ */
+extension BitSetTests {
+    
+    static var allTests = [
+        ("testEmptyBitSet", testEmptyBitSet),
+        ("testFullBitSet", testFullBitSet),
+        ("testPartialBitSet", testPartialBitSet),
+        ("testSingletonBitSet", testSingletonBitSet),
+        ("testBitSetEqality", testBitSetEqality),
+        ("testBitSetIneqality", testBitSetIneqality),
+        ("testInsert", testInsert),
+        ("testRemoveElement", testRemoveElement),
+        ("testRemoveNonElement", testRemoveNonElement),
+        ("testRemoveFromEmptySet", testRemoveFromEmptySet),
+        ("testSubtractEmptySet", testSubtractEmptySet),
+        ("testSubtractFromEmptySet", testSubtractFromEmptySet),
+        ("testSubtractIntersectingSet", testSubtractIntersectingSet),
+        ("testSubtractSubset", testSubtractSubset),
+        ("testSubtractSuperset", testSubtractSuperset),
+        ("testIntersectionWithEmptySet", testIntersectionWithEmptySet),
+        ("testEmptySetIntersection", testEmptySetIntersection),
+        ("testIntersectionWithIntersectingSet", testIntersectionWithIntersectingSet),
+        ("testIntersectionWithSubset", testIntersectionWithSubset),
+        ("testIntersectionWithSuperset", testIntersectionWithSuperset),
+        ("testSubtractingEmptySet", testSubtractingEmptySet),
+        ("testSubtractingFromEmptySet", testSubtractingFromEmptySet),
+        ("testSubtractingIntersectingSet", testSubtractingIntersectingSet),
+        ("testSubtractingSubset", testSubtractingSubset),
+        ("testSubtractingSuperset", testSubtractingSuperset),
+        ("testEmptySetUnion", testEmptySetUnion),
+        ("testUnionWithEmptySet", testUnionWithEmptySet),
+        ("testUnionWithIntersectingSet", testUnionWithIntersectingSet),
+        ("testUnionWithSubset", testUnionWithSubset),
+        ("testUnionWithSuperset", testUnionWithSuperset),
+        ("testIsSubsetWithEmptySet", testIsSubsetWithEmptySet),
+        ("testIsStrictSubsetWithEmptySet", testIsStrictSubsetWithEmptySet),
+        ("testIsSubset", testIsSubset),
+        ("testIsStrictSubset", testIsStrictSubset),
+        ("testIsSupersetWithEmptySet", testIsSupersetWithEmptySet),
+        ("testIsStrictSupersetWithEmptySet", testIsStrictSupersetWithEmptySet),
+        ("testIsSuperset", testIsSuperset),
+        ("testIsStrictSuperset", testIsStrictSuperset),
+        ("testCreateSetByArrayLiteral", testCreateSetByArrayLiteral),
+        ("testSetEqualityWithArrayLiteral", testSetEqualityWithArrayLiteral),
+        ("testSetOperationWithArrayLiteral", testSetOperationWithArrayLiteral),
+        ("testIsEmpty", testIsEmpty),
+        ("testCount", testCount),
+        ("testEmptySequence", testEmptySequence),
+        ("testFullSequence", testFullSequence),
+        ("testIterateAndInsert", testIterateAndInsert),
+        ("testIterateAndRemove", testIterateAndRemove),
+    ]
     
 }

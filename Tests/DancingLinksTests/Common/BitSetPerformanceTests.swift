@@ -8,7 +8,10 @@
 import XCTest
 @testable import DancingLinks
 
-// Tests BitSet performance.
+/**
+ Tests BitSet performance.
+ Use release build.
+ */
 class BitSetPerformanceTests: XCTestCase {
     
     // MARK: Static properties
@@ -73,5 +76,18 @@ class BitSetPerformanceTests: XCTestCase {
             }
         }
     }
+    
+}
+
+/**
+ For LinuxMain.
+ */
+extension BitSetPerformanceTests {
+    
+    static var allTests = [
+        ("testCreationPerformance", testCreationPerformance),
+        ("testIteratorPerformance", testIteratorPerformance),
+        ("testBitSetPerformance", testBitSetPerformance),
+    ]
     
 }
