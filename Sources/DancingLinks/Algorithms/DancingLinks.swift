@@ -28,7 +28,7 @@ public protocol GridRow {
 /**
  Generator for the rows in a DancingLinks grid.
  */
-public protocol GridGenerator: IteratorProtocol where Element: GridRow {
+public protocol GridGenerator: Sequence where Element: GridRow {
     
     /// Number of columns needed to represent all constraints.
     var columns: Int { get }
@@ -37,15 +37,12 @@ public protocol GridGenerator: IteratorProtocol where Element: GridRow {
 
 
 /**
- Solution consisting of rows ids, a subset of the rows created by the generator.
+ Solution consisting of a subset of the rows created by the generator.
  */
-public protocol Solution {
-    
-    /// Client-specific way of identifying a row.
-    associatedtype Row
+public struct Solution<Row> {
     
     /// Number of columns needed to represent all constraints.
-    var rows: [Row] { get }
+    let rows: [Row]
     
 }
 
@@ -63,7 +60,8 @@ public enum SearchStrategy {
 
 /**
  Search state.
- Can only be terminated by the client. After termination the algorithm should stop searching.
+ Can be terminated by the client. After termination the algorithm should stop searching.
+ May contain additional information, such as statistics about the search.
  */
 public class SearchState {
     
@@ -92,7 +90,7 @@ public protocol DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G, S>(generator: G, strategy: SearchStrategy, handler: (S, SearchState) -> ()) where G: GridGenerator, S: Solution, G.Element.Row == S.Row
+    func solve<G, R>(generator: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: GridGenerator, R == G.Element.Row
     
 }
 
@@ -102,10 +100,10 @@ public protocol DancingLinks {
 extension DancingLinks {
     
     /// Returns the solutions, optionally up to a certain limit.
-    func solve<G, S>(generator: G, strategy: SearchStrategy, limit: Int? = nil) -> [S] where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
-        var solutions = [S]()
+    func solve<G, R>(generator: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<R>] where G: GridGenerator, R == G.Element.Row {
+        var solutions = [Solution<R>]()
 
-        solve(generator: generator, strategy: strategy) { (solution: S, state: SearchState) in
+        solve(generator: generator, strategy: strategy) { (solution: Solution<R>, state: SearchState) in
             guard let limit = limit else { return solutions.append(solution) }
             
             if solutions.count < limit {
@@ -120,7 +118,7 @@ extension DancingLinks {
     }
     
     /// Returns the first solution found, or nil if no solution found.
-    func solve<G, S>(generator: G, strategy: SearchStrategy) -> S? where G: GridGenerator, S: Solution, G.Element.Row == S.Row {
+    func solve<G, R>(generator: G, strategy: SearchStrategy = .minimumSize) -> Solution<R>? where G: GridGenerator, R == G.Element.Row {
         solve(generator: generator, strategy: strategy, limit: 1).first
     }
     
