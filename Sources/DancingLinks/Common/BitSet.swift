@@ -4,7 +4,7 @@
 //  Created by Michel Tilman on 14/05/2019.
 //  Copyright © 2019 Dotted.Pair.
 //  Licensed under Apache License v2.0.
-
+//
 
 /**
  BitSet implements a set of elements of type Int.

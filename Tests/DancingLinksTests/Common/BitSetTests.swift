@@ -4,6 +4,7 @@
 //  Created by Michel Tilman on 14/05/2019.
 //  Copyright © 2019 Dotted.Pair.
 //  Licensed under Apache License v2.0.
+//
 
 import XCTest
 @testable import DancingLinks

@@ -4,7 +4,7 @@
 //  Created by Michel Tilman on 04/06/2019.
 //  Copyright © 2019 Dotted.Pair.
 //  Licensed under Apache License v2.0.
-
+//
 
 /**
  Sparse row in a DancingLinks grid.

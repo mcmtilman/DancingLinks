@@ -1,7 +1,17 @@
+//
+//  DancingLinksTests.swift
+//
+//  Created by Michel Tilman on 06/06/2019.
+//  Copyright © 2019 Dotted.Pair.
+//  Licensed under Apache License v2.0.
+//
+
 import XCTest
 @testable import DancingLinks
 
-
+/**
+ Row identified by number
+ */
 fileprivate struct MockRow: GridRow {
     
     let row: Int
@@ -10,6 +20,10 @@ fileprivate struct MockRow: GridRow {
     
 }
 
+
+/**
+ Simple grid of 5 rows and 5 columns.
+ */
 fileprivate struct MockGrid: Grid, IteratorProtocol {
     
     let rows: Int
