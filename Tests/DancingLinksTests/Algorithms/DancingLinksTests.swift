@@ -10,29 +10,19 @@ fileprivate struct MockRow: GridRow {
     
 }
 
-fileprivate struct MockGenerator: GridGenerator {
-    
-    struct TestIterator: IteratorProtocol {
-        
-        let rows: Int
-        
-        var i = 0
-        
-        mutating func next() -> MockRow? {
-            guard i < rows else { return nil }
-            defer { i += 1 }
-            
-            return MockRow(row: i, columns: Array(0 ... i))
-        }
-        
-    }
+fileprivate struct MockGrid: Grid, IteratorProtocol {
     
     let rows: Int
     
     let columns = 5
     
-    func makeIterator() -> TestIterator {
-        TestIterator(rows: rows)
+    var i = 0
+    
+    mutating func next() -> MockRow? {
+        guard i < rows else { return nil }
+        
+        defer { i += 1 }
+        return MockRow(row: i, columns: Array(0 ... i))
     }
     
 }
@@ -44,11 +34,13 @@ fileprivate struct MockGenerator: GridGenerator {
  */
 fileprivate struct MockDancingLinks: DancingLinks {
     
-    func solve<G, R>(generator: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: GridGenerator, R == G.Element.Row {
+    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.Element.Id {
         let state = SearchState()
-        let rows = generator.map { $0.row }
+        let rows = grid.map { $0.row }
         
-        for _ in rows where !state.terminated {
+        for _ in rows {
+            guard !state.terminated else { return }
+            
             handler(Solution<R>(rows: rows), state)
         }
         
@@ -66,17 +58,17 @@ final class DancingLinksTests: XCTestCase {
     
     private var dlx: MockDancingLinks { MockDancingLinks() }
     
-    private var generator: MockGenerator { MockGenerator(rows: 5) }
+    private var grid: MockGrid { MockGrid(rows: 5) }
     
     // MARK: Testing
 
     func testSolveEmptyGenerator() {
-        XCTAssertNil(dlx.solve(generator: MockGenerator(rows: 0)))
-        XCTAssertEqual(dlx.solve(generator: MockGenerator(rows: 0)).count, 0)
+        XCTAssertNil(dlx.solve(grid: MockGrid(rows: 0)))
+        XCTAssertEqual(dlx.solve(grid: MockGrid(rows: 0)).count, 0)
     }
     
     func testSolveFirst() {
-        guard let solution = dlx.solve(generator: generator) else { return XCTFail("Nil solution") }
+        guard let solution = dlx.solve(grid: grid) else { return XCTFail("Nil solution") }
         
         XCTAssertEqual(solution.rows.count, 5)
         XCTAssertEqual(solution.rows[0], 0)
@@ -86,11 +78,11 @@ final class DancingLinksTests: XCTestCase {
     }
     
     func testSolveNegativeLimit() {
-        XCTAssertEqual(dlx.solve(generator: generator, limit: -2).count, 0)
+        XCTAssertEqual(dlx.solve(grid: grid, limit: -2).count, 0)
     }
     
     func testSolveNoLimit() {
-        let solutions: [Solution<Int>] = dlx.solve(generator: generator)
+        let solutions: [Solution<Int>] = dlx.solve(grid: grid)
         
         XCTAssertEqual(solutions.count, 5)
         for (_, solution) in solutions.enumerated() {
@@ -102,7 +94,7 @@ final class DancingLinksTests: XCTestCase {
     }
     
     func testSolvePositiveLimit() {
-        let solutions: [Solution<Int>] = dlx.solve(generator: generator, limit: 3)
+        let solutions: [Solution<Int>] = dlx.solve(grid: grid, limit: 3)
         
         XCTAssertEqual(solutions.count, 3)
         for (_, solution) in solutions.enumerated() {
@@ -114,7 +106,7 @@ final class DancingLinksTests: XCTestCase {
     }
     
     func testSolveZeroLimit() {
-        XCTAssertEqual(dlx.solve(generator: generator, limit: 0).count, 0)
+        XCTAssertEqual(dlx.solve(grid: grid, limit: 0).count, 0)
     }
     
 }
