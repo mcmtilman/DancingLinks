@@ -36,6 +36,7 @@ class SudokuTests: XCTestCase {
     
     // MARK: Testing dimensions
     
+    // Test creating sudokus with out-of-bound dimensions.
     func testInvalidDimensions() {
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 4), rows: 1, columns: 2))
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 4), rows: 2, columns: 1))
@@ -43,6 +44,7 @@ class SudokuTests: XCTestCase {
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 1764), rows: 7, columns: 6))
     }
     
+    // Test creating sudokus with invalid numbers of values.
     func testInvalidValuesSize() {
         XCTAssertNil(Sudoku( values: Array(repeating: nil, count: 4), rows: 2, columns: 2))
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 15), rows: 2, columns: 2))
@@ -50,6 +52,7 @@ class SudokuTests: XCTestCase {
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 1295), rows: 6, columns: 6))
     }
     
+    // Test creating square-box sudokus for all accepted dimensions.
     func testSquareBox() {
         XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 16), rows: 2, columns: 2))
         XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 81), rows: 3, columns: 3))
@@ -58,6 +61,7 @@ class SudokuTests: XCTestCase {
         XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 1296), rows: 6, columns: 6))
     }
     
+    // Test creating non-square-box sudokus.
     func testRectangularBox() {
         XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 36), rows: 2, columns: 3))
         XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 64), rows: 2, columns: 4))
@@ -357,19 +361,22 @@ class SudokuTests: XCTestCase {
         XCTAssertNil(Sudoku(string: values, rows: 2, columns: 2))
     }
     
-    // Invalid size
+    // Invalid rows size.
     // Should be 2 or 3.
     func testInvalidSize() {
         let values = """
-            8........
-            ..36.....
-            .7..9.2..
-            .5...7...
-            ....457..
-            ...1...3.
-            ..1....68
-            ..85...1.
-            .9....4..
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
             """
         
         XCTAssertNil(Sudoku(string: values, rows: 4, columns: 3))
@@ -385,7 +392,7 @@ class SudokuTests: XCTestCase {
             .2..
             .1..
             """
-        guard let sudoku = Sudoku(string: values, rows: 2, columns: 2) else { return XCTFail("Null sudoku") }
+        guard let sudoku = Sudoku(string: values, rows: 2, columns: 2) else { return XCTFail("Nil sudoku") }
         
         XCTAssertEqual(sudoku.dimensions.rows, 2)
         XCTAssertEqual(sudoku.dimensions.columns, 2)
@@ -403,7 +410,7 @@ class SudokuTests: XCTestCase {
             .4....
             3..5.1
             """
-        guard let sudoku = Sudoku(string: values, rows: 2, columns: 3) else { return XCTFail("Null sudoku") }
+        guard let sudoku = Sudoku(string: values, rows: 2, columns: 3) else { return XCTFail("Nil sudoku") }
 
         XCTAssertEqual(sudoku.dimensions.rows, 2)
         XCTAssertEqual(sudoku.dimensions.columns, 3)
@@ -470,6 +477,36 @@ class SudokuTests: XCTestCase {
         XCTAssertNotEqual(Sudoku(values: values), Sudokus.evil)
     }
     
+    // Test accessing values using subscripts.
+    func testSubscript() {
+        XCTAssertEqual(Sudokus.evil[0], 8)
+        XCTAssertNil(Sudokus.evil[80])
+        XCTAssertEqual(Sudokus.evil[0, 0], 8)
+        XCTAssertNil(Sudokus.evil[8, 8])
+    }
+
+    // Test completeness of a sudoku.
+    func testCompleteness() {
+        let values1 = """
+            1234
+            3412
+            2143
+            4321
+            """
+        let values2 = """
+            1...
+            ..34
+            .2..
+            .1..
+            """
+
+        guard let sudoku1 = Sudoku(string: values1, rows: 2, columns: 2) else { return XCTFail("Nil sudoku") }
+        guard let sudoku2 = Sudoku(string: values2, rows: 2, columns: 2) else { return XCTFail("Nil sudoku") }
+
+        XCTAssertTrue(sudoku1.isComplete())
+        XCTAssertFalse(sudoku2.isComplete())
+    }
+
 }
 
 
@@ -507,6 +544,8 @@ extension SudokuTests {
         ("testThreeByThreeDimensions", testThreeByThreeDimensions),
         ("testEquality", testEquality),
         ("testNonEquality", testNonEquality),
+        ("testSubscript", testSubscript),
+        ("testCompleteness", testCompleteness),
     ]
     
 }

@@ -87,12 +87,12 @@ struct Sudoku {
     
     // MARK: Computed properties
     
-    /// Number of rows and columns in the sudoku
+    /// Number of rows and columns in the sudoku.
     var size: Int {
         dimensions.cells
     }
     
-    /// Number of cells in the sudoku
+    /// Number of cells in the sudoku.
     var cells: Int {
         size * size
     }
@@ -228,7 +228,7 @@ extension Sudoku {
     
     /// Returns true if there are no empty cells, false otherwise.
     func isComplete() -> Bool {
-        values.allSatisfy { $0 != nil }
+        !values.contains(nil)
     }
 
 }
