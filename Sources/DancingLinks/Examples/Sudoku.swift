@@ -204,9 +204,7 @@ extension Sudoku {
         let rows = lines.map { line in line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }}
         for row in rows {
             guard row.count == size else { return nil }
-            for case let value? in row {
-                guard value >= 1, value <= size else { return nil }
-            }
+            for case let value? in row where value < 1 || value > size { return nil }
         }
 
         self.init(values: rows.flatMap { $0 }, dimensions: dimensions)
