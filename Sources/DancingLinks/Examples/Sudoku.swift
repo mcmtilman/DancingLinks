@@ -39,7 +39,7 @@ struct Dimensions {
     
     // MARK: Initializing
     
-    /// Create new dimensions.
+    /// Initialize the dimensions.
     /// - Parameter rows: Number of rows in a box (range 2 ... 6).
     /// - Parameter columns: Number of columns in a box (range 2 ... 6).
     init?(rows: Int, columns: Int) {
@@ -60,7 +60,10 @@ extension Dimensions: Equatable {}
 
 
 /**
- A square-sized sudoku.
+ Traditional sudoku consisting of rows, columns and boxes (aka houses) consisting of cells.
+ Each cell may be empty or contain a number constrained by the size of the sudoku.
+ Within each house a non-nil value may occur in at most one cell.
+ 
  It's size is determined by the dimensions of a sudoku box. Sudoku boxes need not be square,
  but the number of boxes in the sudoku is constrained by:
  * Horizontal number of boxes = number of box rows.
@@ -70,8 +73,9 @@ extension Dimensions: Equatable {}
  
  Example:
  * Sudoku box dimensions = 2 (rows) x 3 (columns)
- * Number of sudoku rows = number of sudoku columns = size = 2 x 3 = 6
+ * Sudoku size = number of sudoku rows = number of sudoku columns = 2 x 3 = 6
  * Number of sudoku cells = 36
+ * Each cell value, if not nil, must lie in the range 1 ... 6.
  */
 struct Sudoku {
     
