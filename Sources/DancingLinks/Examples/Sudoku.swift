@@ -136,7 +136,7 @@ struct Sudoku {
     /// - Parameter values: List of values for givens and empty cells (nil values), in row-major order.
     /// - Parameter dimensions: Dimensions of a box.
     private init?(values: [Int?], dimensions: Dimensions) {
-        let size = dimensions.cells
+        let size = dimensions.cells, rows = dimensions.rows, columns = dimensions.columns
         guard values.count == size * size else { return nil }
         
         for i in 0 ..< size {
@@ -149,7 +149,6 @@ struct Sudoku {
             }
         }
         for i in 0 ..< size {
-            let rows = dimensions.rows, columns = dimensions.columns
             var columnValues = BitSet(), boxValues = BitSet()
 
             for j in 0 ..< size {

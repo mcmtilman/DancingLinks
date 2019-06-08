@@ -16,7 +16,7 @@ public protocol GridRow {
     associatedtype Id: Hashable
     
     /// Identifies the row.
-    var row: Id { get }
+    var id: Id { get }
     
     /// Columns having a constraint set for this row.
     /// Unconstrained columns are omitted.

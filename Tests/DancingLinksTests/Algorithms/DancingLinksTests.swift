@@ -9,21 +9,17 @@
 import XCTest
 @testable import DancingLinks
 
-/**
- Row identified by number
- */
+// Row identified by number
 fileprivate struct MockRow: GridRow {
     
-    let row: Int
+    let id: Int
     
     let columns: [Int]
     
 }
 
 
-/**
- Simple grid of 5 rows and 5 columns.
- */
+// Simple grid of 5 rows and 5 columns.
 fileprivate struct MockGrid: Grid, IteratorProtocol {
     
     let rows: Int
@@ -36,21 +32,19 @@ fileprivate struct MockGrid: Grid, IteratorProtocol {
         guard i < rows else { return nil }
         
         defer { i += 1 }
-        return MockRow(row: i, columns: Array(0 ... i))
+        return MockRow(id: i, columns: Array(0 ... i))
     }
     
 }
 
 
-/**
- Mock algorithm returning a solution for each grid row read.
- Each solution contains all the rows in input order.
- */
+// Mock algorithm returning a solution for each grid row read.
+// Each solution contains all the rows in input order.
 fileprivate struct MockDancingLinks: DancingLinks {
     
     func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.Element.Id {
         let state = SearchState()
-        let rows = grid.map { $0.row }
+        let rows = grid.map { $0.id }
         
         for _ in rows {
             guard !state.terminated else { return }
