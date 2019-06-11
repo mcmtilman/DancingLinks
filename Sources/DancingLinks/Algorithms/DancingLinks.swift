@@ -7,31 +7,19 @@
 //
 
 /**
- Sparse row in a DancingLinks grid.
- */
-public protocol GridRow {
-    
-    /// Client-specific way of identifying a row.
-    /// Adoption of Hashable protocol allows algorithms to check uniqueness if wanted.
-    associatedtype Id: Hashable
-    
-    /// Identifies the row.
-    var id: Id { get }
-    
-    /// Columns having a constraint set for this row.
-    /// Unconstrained columns are omitted.
-    var columns: [Int] { get }
-    
-}
-
-
-/**
  DancingLinks input represented by a list of sparse grid rows.
+ Generates rows by a call to generateRows, which accepts a consumer.
  */
-public protocol Grid: Sequence where Element: GridRow {
+public protocol Grid {
+    
+    associatedtype RowId where RowId: Equatable
+    
+    /// Generates each row consisting of an id and a list of constraint columns
+    /// and inputs each row to the consumer.
+    func generateRows(consume: (RowId, Int...) -> ())
     
     /// Number of columns needed to represent all constraints.
-    var columns: Int { get }
+    var constraints: Int { get }
     
 }
 
@@ -90,7 +78,7 @@ public protocol DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.Element.Id
+    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId
     
 }
 
@@ -101,7 +89,7 @@ extension DancingLinks {
     
     /// Returns the solutions, optionally limited.
     /// The default search strategy selects a column with smallest size.
-    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<R>] where G: Grid, R == G.Element.Id {
+    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<R>] where G: Grid, R == G.RowId {
         var solutions = [Solution<R>]()
 
         solve(grid: grid, strategy: strategy) { solution, state in
@@ -120,7 +108,7 @@ extension DancingLinks {
     
     /// Returns the first solution found, or nil if no solution found.
     /// The default search strategy selects a column with smallest size.
-    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize) -> Solution<R>? where G: Grid, R == G.Element.Id {
+    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize) -> Solution<R>? where G: Grid, R == G.RowId {
         solve(grid: grid, strategy: strategy, limit: 1).first
     }
     

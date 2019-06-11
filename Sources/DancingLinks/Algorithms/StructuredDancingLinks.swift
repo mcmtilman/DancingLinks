@@ -6,6 +6,8 @@
 //  Licensed under Apache License v2.0.
 //
 
+var updates = 0
+
 /**
  Manages the nodes.
  Most node-related operations are maintained here for ease of use.
@@ -164,11 +166,13 @@ fileprivate struct Store<RowId> where RowId: Equatable {
         var vNode = down(columnNode)
         
         unlinkHorizontal(node: columnNode)
+        updates += 1
         while vNode != columnNode {
             var hNode = right(vNode)
 
             while hNode != vNode {
                 unlinkVertical(node: hNode)
+                updates += 1
                 nodes[hNode.column].size -= 1
                 hNode = right(hNode)
             }
@@ -190,11 +194,13 @@ fileprivate struct Store<RowId> where RowId: Equatable {
             while hNode != vNode {
                 nodes[hNode.column].size += 1
                 relinkVertical(node: hNode)
+                updates += 1
                 hNode = left(hNode)
             }
             vNode = up(vNode)
         }
         relinkHorizontal(node: columnNode)
+        updates += 1
     }
     
     // Re-inserts the node in its proper place in the horizontal list.
@@ -263,18 +269,18 @@ public class StructuredDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.Element.Id {
-        var store = Store<R>(size: 2 * grid.columns + 1)
-        let headerId = store.makeHeaderNode(columnNodes: (0 ..< grid.columns).map { store.makeColumnNode(column: $0) }).id
+    public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+        var store = Store<R>(size: 2 * grid.constraints + 1)
+        let headerId = store.makeHeaderNode(columnNodes: (0 ..< grid.constraints).map { store.makeColumnNode(column: $0) }).id
         let state = SearchState()
         var rows = [R]()
         
         // For each row in the grid, adds a node with given row id for each column in the row.
         func addRowNodes() {
-            for row in grid {
-                guard let column = row.columns.first else { continue }
+            grid.generateRows { (row: R, columns: Int...) in
+                guard let column = columns.first else { return }
                 
-                _ = row.columns.dropFirst().reduce(store.appendNode(row: row.id, column: column)) { node, column in store.insertNode(store.appendNode(row: row.id, column: column), after: node) }
+                _ = columns.dropFirst().reduce(store.appendNode(row: row, column: column)) { node, column in store.insertNode(store.appendNode(row: row, column: column), after: node) }
             }
         }
         
@@ -328,6 +334,8 @@ public class StructuredDancingLinks: DancingLinks {
         }
 
         addRowNodes()
+        updates = 0
+//        print(store.nextId)
         solve(0, handler)
     }
     

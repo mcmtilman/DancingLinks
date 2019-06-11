@@ -9,30 +9,21 @@
 import XCTest
 @testable import DancingLinks
 
-// Row identified by number
-fileprivate struct MockRow: GridRow {
-    
-    let id: Int
-    
-    let columns: [Int]
-    
-}
-
-
 // Simple grid of 5 rows and 5 columns.
-fileprivate struct MockGrid: Grid, IteratorProtocol {
+fileprivate struct MockGrid: Grid {
     
     let rows: Int
+
+    let constraints = 5
     
-    let columns = 5
-    
-    var i = 0
-    
-    mutating func next() -> MockRow? {
-        guard i < rows else { return nil }
+    func generateRows(consume: (Int, Int...) -> ()) {
+        guard rows == 5 else { return }
         
-        defer { i += 1 }
-        return MockRow(id: i, columns: Array(0 ... i))
+        consume(0, 0)
+        consume(1, 0, 1)
+        consume(2, 0, 1, 2)
+        consume(3, 0, 1, 2, 3)
+        consume(4, 0, 1, 2, 3, 4)
     }
     
 }
@@ -42,9 +33,11 @@ fileprivate struct MockGrid: Grid, IteratorProtocol {
 // Each solution contains all the rows in input order.
 fileprivate struct MockDancingLinks: DancingLinks {
     
-    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.Element.Id {
+    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         let state = SearchState()
-        let rows = grid.map { $0.id }
+        var rows = [R]()
+        
+        grid.generateRows { (row: R, columns: Int...) in rows.append(row) }
         
         for _ in rows {
             guard !state.terminated else { return }
