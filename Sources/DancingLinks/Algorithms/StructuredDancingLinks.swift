@@ -76,9 +76,6 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     // Node store.
     var nodes: [Node]
     
-    // Statistics allowing use to compare search strategies.
-    var updates = 0
-
     // MARK: Computed properties
     
     // ID generator.
@@ -167,14 +164,12 @@ fileprivate struct Store<RowId> where RowId: Equatable {
         var vNode = down(columnNode)
         
         unlinkHorizontal(node: columnNode)
-//        updates += 1
         while vNode != columnNode {
             var hNode = right(vNode)
 
             while hNode != vNode {
                 unlinkVertical(node: hNode)
                 nodes[hNode.column].size -= 1
-                updates += 1
                 hNode = right(hNode)
             }
             vNode = down(vNode)
@@ -195,13 +190,11 @@ fileprivate struct Store<RowId> where RowId: Equatable {
             while hNode != vNode {
                 nodes[hNode.column].size += 1
                 relinkVertical(node: hNode)
-                updates += 1
                 hNode = left(hNode)
             }
             vNode = up(vNode)
         }
         relinkHorizontal(node: columnNode)
-        updates += 1
     }
     
     // Re-inserts the node in its proper place in the horizontal list.
@@ -319,8 +312,10 @@ public class StructuredDancingLinks: DancingLinks {
                     store.coverNode(hNode)
                     hNode = store.right(hNode)
                 }
+                
                 solve(k + 1, handler)
                 guard !state.terminated else { return }
+                
                 rows.removeLast()
                 hNode = store.left(vNode)
                 while hNode != vNode {
