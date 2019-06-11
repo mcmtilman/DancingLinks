@@ -58,6 +58,26 @@ class SudokuSolverTests: XCTestCase {
         }
     }
     
+    // Test solving the evil sudoku.
+    func testSolveEvilSudoku() {
+        let string = """
+            812753649
+            943682175
+            675491283
+            154237896
+            369845721
+            287169534
+            521974368
+            438526917
+            796318452
+            """
+        let evil = Sudokus.evil
+        let solution = SudokuSolver().solve(sudoku: evil)
+        
+        XCTAssertNotNil(solution)
+        XCTAssertEqual(solution, Sudoku(string: string))
+    }
+    
 }
 
 
@@ -69,6 +89,7 @@ extension SudokuSolverTests {
     static var allTests = [
         ("testCompleteGrid", testCompleteGrid),
         ("testEmptyGrid", testEmptyGrid),
+        ("testSolveEvilSudoku", testSolveEvilSudoku),
     ]
 
 }

@@ -135,7 +135,7 @@ struct Sudoku {
     ///
     /// - Parameter values: List of values for givens and empty cells (nil values), in row-major order.
     /// - Parameter dimensions: Dimensions of a box.
-    private init?(values: [Int?], dimensions: Dimensions) {
+    init?(values: [Int?], dimensions: Dimensions) {
         let size = dimensions.cells, rows = dimensions.rows, columns = dimensions.columns
         guard values.count == size * size else { return nil }
         
@@ -212,7 +212,7 @@ extension Sudoku {
 
         self.init(values: rows.flatMap { $0 }, dimensions: dimensions)
     }
-
+    
     // MARK: Subscript accessing
     
     /// Returns the element at given position in row-major order.

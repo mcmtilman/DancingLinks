@@ -108,3 +108,27 @@ struct SudokuGrid: Grid, IteratorProtocol {
     }
     
 }
+
+
+/**
+ Sudoku solver using DancingLinks algorithm.
+ */
+class SudokuSolver {
+    
+    // Struct-based implementation of DancingLinks.
+    private let dlx = StructuredDancingLinks()
+    
+    /// Returns single solution of sudoku, or nil otherwise (no or multiple solutions).
+    func solve(sudoku: Sudoku) -> Sudoku? {
+        guard let solution = dlx.solve(grid: SudokuGrid(sudoku: sudoku)) else { return nil }
+        var values = [Int?](repeating: nil, count: sudoku.cells)
+        
+        for row in solution.rows {
+            values[row.cell] = row.value
+        }
+        
+        return Sudoku(values: values, dimensions: sudoku.dimensions)
+    }
+    
+}
+
