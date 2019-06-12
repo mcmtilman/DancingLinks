@@ -14,23 +14,24 @@ public protocol Grid {
     
     associatedtype RowId where RowId: Equatable
     
-    /// Generates each row consisting of an id and a list of constraint columns
-    /// and inputs each row to the consumer.
+    /// Generates rows consisting of an id and a list of constraint columns,
+    /// and inputs each row into the consumer.
     func generateRows(consume: (RowId, Int...) -> ())
     
-    /// Number of columns needed to represent all constraints.
+    /// Identifies the constraints (DancingLinks columns) for this row.
+    /// If this list is empty, the row should be ignored by the consumer.
     var constraints: Int { get }
     
 }
 
 
 /**
- Solution consisting of a subset of the rows created by the generator.
+ Solution consisting of a subset of row ids produced by the generator.
  */
-public struct Solution<Row> {
+public struct Solution<RowId> {
     
-    /// Number of columns needed to represent all constraints.
-    let rows: [Row]
+    /// List of row ids in the solution.
+    let rows: [RowId]
     
 }
 

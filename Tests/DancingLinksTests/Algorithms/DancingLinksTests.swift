@@ -37,7 +37,7 @@ fileprivate struct MockDancingLinks: DancingLinks {
         let state = SearchState()
         var rows = [R]()
         
-        grid.generateRows { (row: R, columns: Int...) in rows.append(row) }
+        grid.generateRows { (row: R, constraints: Int...) in rows.append(row) }
         
         for _ in rows {
             guard !state.terminated else { return }

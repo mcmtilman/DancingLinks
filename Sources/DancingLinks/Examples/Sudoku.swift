@@ -17,17 +17,17 @@ struct Dimensions {
     /// Minimum = 2, maximum = 6.
     enum Bounds {
         
-        /// Range of allowed number of columns in a box.
+        /// Range of the allowed number of columns in a box.
         static let columns = 2 ... 6
         
-        /// Range of allowed number of rows in a box.
+        /// Range of the allowed number of rows in a box.
         static let rows = 2 ... 6
         
     }
     
     // MARK: Stored properties
     
-    /// Box dimensions in range defined by Bounds.
+    /// Box dimensions.
     let rows, columns: Int
     
     // MARK: Computed properties
@@ -39,9 +39,10 @@ struct Dimensions {
     
     // MARK: Initializing
     
-    /// Initialize the dimensions.
+    /// Initializes the dimensions.
     /// - Parameter rows: Number of rows in a box (range 2 ... 6).
     /// - Parameter columns: Number of columns in a box (range 2 ... 6).
+    /// Fails if the dimensions are in the Bounds ranges.
     init?(rows: Int, columns: Int) {
         guard Bounds.rows.contains(rows), Bounds.columns.contains(columns) else { return nil }
         
@@ -54,7 +55,7 @@ struct Dimensions {
 
 /**
  Equatable protocol adoption.
- Allows us to compare sudoku's easily.
+ Allows us to compare sudoku's.
  */
 extension Dimensions: Equatable {}
 
@@ -64,15 +65,16 @@ extension Dimensions: Equatable {}
  Each cell may be empty or contain a number constrained by the size of the sudoku.
  Within each house a non-nil value may occur in at most one cell.
  
- It's size is determined by the dimensions of a sudoku box. Sudoku boxes need not be square,
- but the number of boxes in the sudoku is constrained by:
+ While the sudoku is a square, the sudoku boxes may be rectangular.
+ The sudoku size is determined by the dimensions of its sudoku boxes.
+ The number of boxes in the sudoku is constrained by:
  * Horizontal number of boxes = number of box rows.
  * Vertical number of boxes = number of box columns.
- The size (number of rows or number columns in the sudoku) = the number of cells of the sudoku dimensions.
- The number of cells in the sudoku = size * size.
+ The size (number of rows or number of columns in the sudoku) = the number of cells of the sudoku dimensions.
+ The number of cells in the total sudoku = size * size.
  
  Example:
- * Sudoku box dimensions = 2 (rows) x 3 (columns)
+ * Sudoku box dimensions = 2 rows x 3 columns
  * Sudoku size = number of sudoku rows = number of sudoku columns = 2 x 3 = 6
  * Number of sudoku cells = 36
  * Each cell value, if not nil, must lie in the range 1 ... 6.
@@ -85,8 +87,8 @@ struct Sudoku {
     let dimensions: Dimensions
     
     /// The list of all values within the sudoku, in row-major order.
-    /// The array should be of size = square of the dimensions size.
-    /// The array elements should be nil or in the range 1 ... dimensions size.
+    /// The size of the array equals the number of cells in the sudoku.
+    /// The array elements should be nil or in the range 1 ... sudoku size.
     let values: [Int?]
     
     // MARK: Computed properties

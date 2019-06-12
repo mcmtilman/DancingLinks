@@ -7,14 +7,14 @@
 //
 
 /**
- Identifies a sudoku grid row.
+ A cell in the solved sudoku.
  */
-struct CellValue: Hashable {
+struct Cell: Hashable {
     
-    /// Index in the sudoku values array.
-    let cell: Int
+    /// Index of a sudoku cell in row-major order.
+    let index: Int
     
-    /// Either the cell's given, if it exists, or one of the avaialable choices of an empty cell.
+    /// Either the cell's given or one of the available choices in case of an empty cell.
     let value: Int
     
 }
@@ -34,23 +34,22 @@ extension Sudoku: Grid {
     
     // MARK: Generating
     
-    /// Generate the rows, passing each row to the consumer.
-    /// Note. We could reduced the number of rows by limiting empty cell vslues
-    /// to only those numbers that are not used as a given in houses.
-    func generateRows(consume: (CellValue, Int...) -> ()) {
+    /// Generates the rows and passes them to the consumer.
+    /// Note. We can reduced the number of rows by limiting empty cell values
+    /// to those numbers that are not used as givens in any of the cell's houses.
+    func generateRows(consume: (Cell, Int...) -> ()) {
         let rows = dimensions.rows, columns = dimensions.columns
 
         for row in 0 ..< size {
             for column in 0 ..< size {
-                let cell = row * size + column
+                let index = row * size + column
                 
-                for each in (values[cell].map { $0 ... $0 } ?? 1 ... size) {
-                    let rowId = CellValue(cell: cell, value: each)
-                    let cellConstraint = cell
-                    let value = each - 1
-                    let rowConstraint = cells + row * size + value
-                    let columnConstraint = cells * 2 + column * size + value
-                    let boxConstraint = cells * 3 + (row / rows * rows + column / columns) * size + value
+                for value in (values[index].map { $0 ... $0 } ?? 1 ... size) {
+                    let rowId = Cell(index: index, value: value)
+                    let cellConstraint = index
+                    let rowConstraint = cells + row * size + value - 1
+                    let columnConstraint = cells * 2 + column * size + value - 1
+                    let boxConstraint = cells * 3 + (row / rows * rows + column / columns) * size + value - 1
                     
                     consume(rowId, cellConstraint, rowConstraint, columnConstraint, boxConstraint)
                 }
@@ -75,7 +74,7 @@ class SudokuSolver {
         var values = [Int?](repeating: nil, count: sudoku.cells)
         
         for row in solution.rows {
-            values[row.cell] = row.value
+            values[row.index] = row.value
         }
         
         return Sudoku(values: values, dimensions: sudoku.dimensions)

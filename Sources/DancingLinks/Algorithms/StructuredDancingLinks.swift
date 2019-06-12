@@ -6,11 +6,9 @@
 //  Licensed under Apache License v2.0.
 //
 
-var updates = 0
-
 /**
  Manages the nodes.
- Most node-related operations are maintained here for ease of use.
+ Most node-related operations are handled here for ease of use.
  */
 fileprivate struct Store<RowId> where RowId: Equatable {
 
@@ -166,13 +164,11 @@ fileprivate struct Store<RowId> where RowId: Equatable {
         var vNode = down(columnNode)
         
         unlinkHorizontal(node: columnNode)
-        updates += 1
         while vNode != columnNode {
             var hNode = right(vNode)
 
             while hNode != vNode {
                 unlinkVertical(node: hNode)
-                updates += 1
                 nodes[hNode.column].size -= 1
                 hNode = right(hNode)
             }
@@ -194,13 +190,11 @@ fileprivate struct Store<RowId> where RowId: Equatable {
             while hNode != vNode {
                 nodes[hNode.column].size += 1
                 relinkVertical(node: hNode)
-                updates += 1
                 hNode = left(hNode)
             }
             vNode = up(vNode)
         }
         relinkHorizontal(node: columnNode)
-        updates += 1
     }
     
     // Re-inserts the node in its proper place in the horizontal list.
@@ -334,8 +328,6 @@ public class StructuredDancingLinks: DancingLinks {
         }
 
         addRowNodes()
-        updates = 0
-//        print(store.nextId)
         solve(0, handler)
     }
     

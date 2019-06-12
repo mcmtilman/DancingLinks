@@ -30,12 +30,52 @@ class SudokuSolverTests: XCTestCase {
         XCTAssertEqual(sudoku.constraints, 64)
         XCTAssertEqual(rows.count, 16)
         for (i, (id, columns)) in zip(0 ..< 16, rows) {
-            XCTAssertEqual(id.cell, i)
+            XCTAssertEqual(id.index, i)
             XCTAssertEqual(id.value, givens[i])
             XCTAssertEqual(columns.count, 4)
         }
     }
 
+    // Test if the complete sudoku returns the same number of constraints as the rows.
+    func testCompleteConstraints() {
+        let string = """
+            812753649
+            943682175
+            675491283
+            154237896
+            369845721
+            287169534
+            521974368
+            438526917
+            796318452
+            """
+        guard let sudoku = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
+        
+        XCTAssertEqual(sudoku.constraints, 324)
+        XCTAssertEqual(Set(collectConstraints(sudoku)).count, 324)
+        XCTAssertEqual(collectConstraints(sudoku).count, 324)
+    }
+    
+    // Test if the empty sudoku returns the same number of constraints as the rows.
+    func testEmptyConstraints() {
+        let string = """
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            """
+        guard let sudoku = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
+
+        XCTAssertEqual(sudoku.constraints, 324)
+        XCTAssertEqual(Set(collectConstraints(sudoku)).count, 324)
+        XCTAssertEqual(collectConstraints(sudoku).count, 2916)
+    }
+    
     // Test iterating the grid of an empty sudoku.
     func testEmptyGrid() {
         let string = """
@@ -52,7 +92,7 @@ class SudokuSolverTests: XCTestCase {
         XCTAssertEqual(sudoku.constraints, 64)
         XCTAssertEqual(rows.count, 64)
         for (i, (id, columns)) in zip(0 ..< 64, rows) {
-            XCTAssertEqual(id.cell, i / 4)
+            XCTAssertEqual(id.index, i / 4)
             XCTAssertEqual(id.value, values[i])
             XCTAssertEqual(columns.count, 4)
         }
@@ -78,12 +118,16 @@ class SudokuSolverTests: XCTestCase {
         XCTAssertEqual(solution, Sudoku(string: string))
     }
     
-    private func gridRows(_ sudoku: Sudoku) -> [(id: CellValue, columns: [Int])] {
-        var rows = [(id: CellValue, columns: [Int])]()
+    private func gridRows(_ sudoku: Sudoku) -> [(id: Cell, columns: [Int])] {
+        var rows = [(id: Cell, columns: [Int])]()
         
-        sudoku.generateRows { (id: CellValue, columns: Int...) in rows.append((id: id, columns: columns)) }
+        sudoku.generateRows { (id: Cell, columns: Int...) in rows.append((id: id, columns: columns)) }
         
         return rows
+    }
+    
+    private func collectConstraints(_ sudoku: Sudoku) -> [Int] {
+        gridRows(sudoku).reduce([]) { array, row in array + row.columns }
     }
     
 }
@@ -96,6 +140,8 @@ extension SudokuSolverTests {
     
     static var allTests = [
         ("testCompleteGrid", testCompleteGrid),
+        ("testCompleteConstraints", testCompleteConstraints),
+        ("testEmptyConstraints", testEmptyConstraints),
         ("testEmptyGrid", testEmptyGrid),
         ("testSolveEvilSudoku", testSolveEvilSudoku),
     ]
