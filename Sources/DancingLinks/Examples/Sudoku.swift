@@ -7,27 +7,32 @@
 //
 
 /**
- Dimensions of a sudoku box, defined by number of rows and columns.
+ Dimensions of a sudoku box. Specifies the number of rows and columns.
  */
 struct Dimensions {
     
     // MARK: Constraints
     
-    /// Specifies lower and upper bounds for the number of rows and columns in a box.
-    /// Minimum = 2, maximum = 6.
+    /// Specifies lower and upper bounds for the number of rows and number of columns in a box.
+    /// Minimum = 2, maximum = 32.
+    /// The number of cells (rows * columns) should be less than or equal to the BitSet maximum value.
     enum Bounds {
         
         /// Range of the allowed number of columns in a box.
-        static let columns = 2 ... 6
+        static let columns = 2 ... 32
         
         /// Range of the allowed number of rows in a box.
-        static let rows = 2 ... 6
+        static let rows = 2 ... 32
+        
+        /// Maximum number of cells in a box.
+        /// Note. We can double the maximum by 'encoding' the range of cells values (1 ... cells) as (0 ..< cells).
+        static let maxCells = BitSet.max
         
     }
     
     // MARK: Stored properties
     
-    /// Box dimensions.
+    /// Box dimensions, constrained by Bounds.
     let rows, columns: Int
     
     // MARK: Computed properties
@@ -40,12 +45,13 @@ struct Dimensions {
     // MARK: Initializing
     
     /// Initializes the dimensions.
-    /// - Parameter rows: Number of rows in a box (range 2 ... 6).
-    /// - Parameter columns: Number of columns in a box (range 2 ... 6).
-    /// Fails if the dimensions are in the Bounds ranges.
+    /// - Parameter rows: Number of rows in a box (range 2 ... 32).
+    /// - Parameter columns: Number of columns in a box (range 2 ... 32).
+    /// The number of cells should be in the range 4 ..< 64 (assuming 64 bit Int).
+    /// Fails if the dimensions are outside the Bounds ranges.
     init?(rows: Int, columns: Int) {
-        guard Bounds.rows.contains(rows), Bounds.columns.contains(columns) else { return nil }
-        
+        guard Bounds.rows.contains(rows), Bounds.columns.contains(columns), rows * columns <= Bounds.maxCells else { return nil }
+
         self.rows = rows
         self.columns = columns
     }
@@ -63,7 +69,7 @@ extension Dimensions: Equatable {}
 /**
  Traditional sudoku consisting of rows, columns and boxes (aka houses) consisting of cells.
  Each cell may be empty or contain a number constrained by the size of the sudoku.
- Within each house a non-nil value may occur in at most one cell.
+ Within each house a non-nil value may occur in only one cell.
  
  While the sudoku is a square, the sudoku boxes may be rectangular.
  The sudoku size is determined by the dimensions of its sudoku boxes.
@@ -77,7 +83,7 @@ extension Dimensions: Equatable {}
  * Sudoku box dimensions = 2 rows x 3 columns
  * Sudoku size = number of sudoku rows = number of sudoku columns = 2 x 3 = 6
  * Number of sudoku cells = 36
- * Each cell value, if not nil, must lie in the range 1 ... 6.
+ * Each non-nil cell value must lie in the range 1 ... 6 and be unique in the houses containing that cell.
  */
 struct Sudoku {
     
@@ -109,12 +115,12 @@ struct Sudoku {
     /// Fail if the sudoku is not valid.
     ///
     /// The following validations are performed:
-    /// - Dimensions are restricted to 2 ... 6 range.
-    /// - Number of values must conform to given dimensions.
+    /// - Box dimensions are restricted to the 2 ... 32 range.
+    /// - Number of values must conform to given dimensions and fit in a bitset.
     /// - All givens (i.e. non-nil values) must contain a valid number in the range 1 ... size of a box.
     /// - There may be no conflict between givens in the same house (box, sudoku row or sudoku column).
-    ///
     /// This does no include verifying that the input has one (and only one) solution.
+    ///
     /// - Parameter values: List of givens and empty cells (nil values), in row-major order.
     /// - Parameter rows: The number of rows within a box. Default = 3.
     /// - Parameter columns: The number of columns within a box. Default = 3.
@@ -130,8 +136,8 @@ struct Sudoku {
     /// Fail if the sudoku is not valid.
     ///
     /// The following validations are performed:
-    /// - Dimensions are restricted to 2 ... 6 range.
-    /// - Values must conform to given dimensions.
+    /// - Dimensions are restricted to 2 ... 32 range.
+    /// - Values must conform to given dimensions and fit in a bitset.
     /// - All givens (i.e. non-nil values) must contain a valid number in the range 1 ... size of a box.
     /// - There may be no conflict between givens in the same house (box, sudoku row or sudoku column).
     ///
@@ -184,7 +190,7 @@ extension Sudoku {
     // MARK: Convenience initializing
     
     /// Initialize the sudoku from given string.
-    /// Each line represents a row. An empty cell is represented by the dot character, other cells by a digit.
+    /// Each line represents a row. An empty cell is represented by the dot character, other cells by a single digit.
     /// Possible dimensions are (2,2), (2, 3), (2, 4), (3, 2), (3, 3), (4, 2).
     ///
     /// - Parameter string: The values, with rows separated by a newline.
@@ -217,13 +223,13 @@ extension Sudoku {
     
     // MARK: Subscript accessing
     
-    /// Returns the element at given position in row-major order.
+    /// Returns the element at given zero-based position in row-major order.
     /// Fails if out of range.
     subscript(index: Int) -> Int? {
         values[index]
     }
     
-    /// Returns the element at given row and column.
+    /// Returns the element at given zero-based row and column.
     /// Fails if out of range.
     subscript(row: Int, column: Int) -> Int? {
         values[row * size + column]

@@ -10,7 +10,7 @@
  Manages the nodes.
  Most node-related operations are handled here for ease of use.
  */
-fileprivate struct Store<RowId> where RowId: Equatable {
+fileprivate struct Store<RowId> where RowId: Hashable {
 
     struct Node: Equatable {
         
@@ -21,25 +21,25 @@ fileprivate struct Store<RowId> where RowId: Equatable {
 
         // MARK: Stored properties
         
-        // Reference to the column node
+        // Reference to the column node in the store.
         let column: Int
         
-        // Reference to this node in the store.
+        // Reference of this node in the store.
         let id: Int
         
-        // External row reference. Same for all nodes in the same row.
+        // Client row reference. Same for all nodes in the same row.
         // Nil for headers and columns.
         let row: RowId?
         
         // References to left, right, up and down nodes in the store.
         var down, left, right, up: Int
         
-        // Number of nodes in a column. Only used by column nodes.
+        // Number of row nodes in a column. Only used by column nodes.
         var size = 0
         
         // MARK: Computed properties
         
-        // Returns true if this node is a column node.
+        // Returns true if this node is a column node, false otherwise.
         var isColumn: Bool {
             row == nil
         }
@@ -64,7 +64,7 @@ fileprivate struct Store<RowId> where RowId: Equatable {
         // MARK: Private initializing
         
         // Initializes a header, column or row node.
-        // Initially all references to connected nodes point to the node itself.
+        // Initially all references to linked nodes point to the node itself.
         private init(_ r: RowId?, _ c: Int, _ i: Int) {
             (id, left, right, up, down, row, column) = (i, i, i, i, i, r, c)
         }
@@ -85,7 +85,7 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     
     // MARK: Initizaling
     
-    // Initialize the node store with given initial capacity.
+    // Initializes the node store with given initial capacity.
     init(size: Int) {
         nodes = [Node]()
         nodes.reserveCapacity(size)
@@ -101,7 +101,7 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     // MARK: Creation operations for the grid.
     
     // Inserts a new node for given row at the bottom of the column.
-    // Answers the node.
+    // Returns the new node.
     mutating func appendNode(row: RowId, column: Int) -> Node {
         let columnNode = nodes[column]
         let node = makeNode(row: row, column: column)
@@ -116,7 +116,7 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     }
 
     // Inserts the node on the right of the other node.
-    // Answer the new node.
+    // Returns the inserted node.
     mutating func insertNode(_ node: Node, after left: Node) -> Node {
         nodes[node.id].left = left.id
         nodes[node.id].right = left.right
@@ -157,8 +157,8 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     
     // Covers (removes node from grid) the node by
     // * horizontally unlinking its column node,
-    // * vertically unlinking any node that uses this column's constraint,
-    // * updating column sizes.
+    // * vertically unlinking any node that uses this column's constraint.
+    // Updates column sizes.
     mutating func coverNode(_ node: Node) {
         let columnNode = column(of: node)
         var vNode = down(columnNode)
@@ -178,8 +178,8 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     
     // Uncovers (re-inserts node in the grid) the node by
     // * vertically re-linking any node that uses this column's constraint,
-    // * horizontally re-linking its column node,
-    // * updating column sizes.
+    // * horizontally re-linking its column node.
+    // Updates column sizes.
     mutating func uncoverNode(_ node: Node) {
         let columnNode = column(of: node)
         var vNode = up(columnNode)
@@ -209,13 +209,13 @@ fileprivate struct Store<RowId> where RowId: Equatable {
         nodes[node.down].up = node.id
     }
 
-    // Removes the node from its proper place in the horizontal list.
+    // Removes the node from the horizontal list.
     mutating func unlinkHorizontal(node: Node) {
         nodes[node.left].right = node.right
         nodes[node.right].left = node.left
     }
     
-    // Removes the node from its proper place in the vertical list.
+    // Removes the node from the vertical list.
     mutating func unlinkVertical(node: Node) {
         nodes[node.up].down = node.down
         nodes[node.down].up = node.up
@@ -224,11 +224,13 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     // MARK: Creating nodes
     
     // Creates a column node and adds it to the store.
+    // Returns the column node.
     mutating func makeColumnNode(column: Int) -> Node {
         storeNode(Node(column: column, id: nextId))
     }
     
     // Creates the header node with given column nodes and adds it to the store.
+    // Returns the header node.
     mutating func makeHeaderNode(columnNodes: [Node]) -> Node {
         let header = storeNode(Node(headerId: nextId))
         let _ = columnNodes.reduce(header) { node, column in insertNode(column, after: node)}
@@ -237,13 +239,15 @@ fileprivate struct Store<RowId> where RowId: Equatable {
     }
 
     // Makes a node for given row, column and adds it to the store.
+    // Returns the node.
     mutating func makeNode(row: RowId, column: Int) -> Node {
         storeNode(Node(row: row, column: column, id: nextId))
     }
 
     // MARK: Private creating nodes
     
-    // Adds the node to the store and returns the node.
+    // Adds the node to the store.
+    // Returns the node.
     private mutating func storeNode(_ node: Node) -> Node {
         nodes.append(node)
         
@@ -278,7 +282,7 @@ public class StructuredDancingLinks: DancingLinks {
             }
         }
         
-        // Returns a column node according to the chosen strategy.
+        // Returns an available column node according to the chosen strategy.
         func selectColumn(_ header: Store<R>.Node) -> Store<R>.Node {
             guard strategy == .minimumSize else { return store.right(header) }
 
@@ -295,8 +299,8 @@ public class StructuredDancingLinks: DancingLinks {
         // Recursively search for a solution until we have exhausted all options.
         // When all columns have been covered, pass the solution to the handler.
         // Stop searching when the handler sets the search state to terminated.
-        // Note. Parameter k is only needed for e.g. logging or debugging.
-        func solve(_ k: Int, _ handler: (Solution<R>, SearchState) -> ()) {
+        // Note. Parameter k is not really needed but may be useful for e.g. debugging.
+        func solve(_ k: Int) {
             let header = store[headerId]
             guard store.right(header) != header else { return handler(Solution(rows: rows), state) }
             
@@ -313,7 +317,7 @@ public class StructuredDancingLinks: DancingLinks {
                     hNode = store.right(hNode)
                 }
                 
-                solve(k + 1, handler)
+                solve(k + 1)
                 guard !state.terminated else { return }
                 
                 rows.removeLast()
@@ -328,7 +332,7 @@ public class StructuredDancingLinks: DancingLinks {
         }
 
         addRowNodes()
-        solve(0, handler)
+        solve(0)
     }
     
 }

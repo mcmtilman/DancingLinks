@@ -34,14 +34,21 @@ enum Sudokus {
  */
 class SudokuTests: XCTestCase {
     
-    // MARK: Testing dimensions
+    // MARK: Testing dimensions (assumes 64 bit Int).
     
     // Test creating sudokus with out-of-bound dimensions.
     func testInvalidDimensions() {
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 4), rows: 1, columns: 2))
         XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 4), rows: 2, columns: 1))
-        XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 1764), rows: 6, columns: 7))
-        XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 1764), rows: 7, columns: 6))
+        XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 7688), rows: 32, columns: 2))
+        XCTAssertNil(Sudoku(values: Array(repeating: nil, count: 7688), rows: 2, columns: 32))
+    }
+    
+    // Test creating sudokus with minimum and maximum dimensions.
+    func testValidDimensions() {
+        XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 16), rows: 2, columns: 2))
+        XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 3844), rows: 2, columns: 31))
+        XCTAssertNotNil(Sudoku(values: Array(repeating: nil, count: 3844), rows: 31, columns: 2))
     }
     
     // Test creating sudokus with invalid numbers of values.
@@ -160,6 +167,22 @@ class SudokuTests: XCTestCase {
         XCTAssertNil(Sudoku(values: values))
     }
 
+    // Test if we can create a large valid sudoku.
+    func testInit30By2() {
+        var values = [Int?](repeating: nil, count: 3600)
+        
+        for row in 0 ..< 60 {
+            let start = row < 30 ? row * 2 : (row - 30) * 2 + 1
+            
+            for i in 0 ..< 60 {
+                values[row * 60 + i] = (start + i) % 60 + 1
+            }
+        }
+        let sudoku = Sudoku(values: values, rows: 30, columns: 2)
+        
+        XCTAssertNotNil(sudoku)
+    }
+    
     // MARK: Testing sudoku creation from string
     
     // Test empty string input.
@@ -517,6 +540,7 @@ extension SudokuTests {
     
     static var allTests = [
         ("testInvalidDimensions", testInvalidDimensions),
+        ("testValidDimensions", testValidDimensions),
         ("testInvalidValuesSize", testInvalidValuesSize),
         ("testSquareBox", testSquareBox),
         ("testRectangularBox", testRectangularBox),

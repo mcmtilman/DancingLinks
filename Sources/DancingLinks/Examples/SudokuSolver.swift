@@ -7,7 +7,7 @@
 //
 
 /**
- A cell in the solved sudoku.
+ A cell with (resolved) given in a sudoku.
  */
 struct Cell: Hashable {
     
@@ -27,7 +27,7 @@ extension Sudoku: Grid {
     
     // MARK: Computed properties
     
-    /// Maximum number of constraints added for all rows.
+    /// Maximum number of constraints needed.
     var constraints: Int {
        cells * 4
     }
@@ -35,7 +35,7 @@ extension Sudoku: Grid {
     // MARK: Generating
     
     /// Generates the rows and passes them to the consumer.
-    /// Note. We can reduced the number of rows by limiting empty cell values
+    /// Note. We can reduce the number of rows by limiting empty cell values
     /// to those numbers that are not used as givens in any of the cell's houses.
     func generateRows(consume: (Cell, Int...) -> ()) {
         let rows = dimensions.rows, columns = dimensions.columns
@@ -65,12 +65,13 @@ extension Sudoku: Grid {
  */
 class SudokuSolver {
     
-    // Struct-based implementation of DancingLinks.
-    private let dlx = StructuredDancingLinks()
+    private static let dlx = StructuredDancingLinks()
     
-    /// Returns single solution of sudoku, or nil otherwise (no or multiple solutions).
-    func solve(sudoku: Sudoku) -> Sudoku? {
-        guard let solution = dlx.solve(grid: sudoku) else { return nil }
+    /// Returns a solution of the sudoku, or nil if no solution found.
+    /// Does not verify the existence of additional solutions.
+    /// Default algorithm = StructuredDancingLinks.
+    func solve(sudoku: Sudoku, algorithm: DancingLinks = dlx) -> Sudoku? {
+        guard let solution = algorithm.solve(grid: sudoku) else { return nil }
         var values = [Int?](repeating: nil, count: sudoku.cells)
         
         for row in solution.rows {

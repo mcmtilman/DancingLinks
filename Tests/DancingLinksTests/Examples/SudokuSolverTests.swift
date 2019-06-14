@@ -118,6 +118,32 @@ class SudokuSolverTests: XCTestCase {
         XCTAssertEqual(solution, Sudoku(string: string))
     }
     
+    // Test if we can solve a large (20x2) sudoku.
+    // Leave the top row cells empty.
+    func testSolveLargeSudoku() {
+        var values = [Int?](repeating: nil, count: 1600)
+        
+        for row in 1 ..< 40 {
+            let start = row < 20 ? row * 2 : (row - 20) * 2 + 1
+            
+            for i in 0 ..< 40 {
+                values[row * 40 + i] = (start + i) % 40 + 1
+            }
+        }
+
+        guard let sudoku = Sudoku(values: values, rows: 20, columns: 2) else { return XCTFail("Nil sudoku") }
+        guard let solution = SudokuSolver().solve(sudoku: sudoku) else { return XCTFail("Nil solution") }
+        
+        for i in 0 ..< 40 {
+            XCTAssertNil(sudoku[i])
+            XCTAssertEqual(solution[i], i + 1)
+        }
+
+        for i in 40 ..< 1600 {
+            XCTAssertEqual(solution[i], sudoku[i])
+        }
+   }
+    
     private func gridRows(_ sudoku: Sudoku) -> [(id: Cell, columns: [Int])] {
         var rows = [(id: Cell, columns: [Int])]()
         
@@ -144,6 +170,7 @@ extension SudokuSolverTests {
         ("testEmptyConstraints", testEmptyConstraints),
         ("testEmptyGrid", testEmptyGrid),
         ("testSolveEvilSudoku", testSolveEvilSudoku),
+        ("testSolveLargeSudoku", testSolveLargeSudoku),
     ]
 
 }
