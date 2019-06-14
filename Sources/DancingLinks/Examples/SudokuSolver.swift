@@ -65,7 +65,12 @@ extension Sudoku: Grid {
  */
 class SudokuSolver {
     
+    // MARK: Defaults
+    
+    // Default algorithm.
     private static let dlx = StructuredDancingLinks()
+    
+    // MARK: Solving sudoku
     
     /// Returns a solution of the sudoku, or nil if no solution found.
     /// Does not verify the existence of additional solutions.
