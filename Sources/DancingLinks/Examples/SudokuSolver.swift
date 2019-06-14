@@ -70,7 +70,7 @@ class SudokuSolver {
     // Default algorithm.
     private static let dlx = StructuredDancingLinks()
     
-    // MARK: Solving sudoku
+    // MARK: Solving sudokus
     
     /// Returns a solution of the sudoku, or nil if no solution found.
     /// Does not verify the existence of additional solutions.

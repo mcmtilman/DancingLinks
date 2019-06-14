@@ -14,9 +14,22 @@ import XCTest
  */
 class SudokuSolverPerformanceTests: XCTestCase {
     
-    // Test solving the evil sudoku.
-    func testSolveEvilSudoku() {
+    // Test solving the evil sudoku using ClassyDancingLinks.
+    func testSolveClassyEvilSudoku() {
         let evil = Sudokus.evil
+        let algorithm = ClassyDancingLinks()
+        
+        measure {
+            for _ in 1 ... 10 {
+                _ = SudokuSolver().solve(sudoku: evil, algorithm: algorithm)
+            }
+        }
+    }
+    
+    // Test solving the evil sudoku using StructuredDancingLinks.
+    func testSolveStructuredEvilSudoku() {
+        let evil = Sudokus.evil
+        
         measure {
             for _ in 1 ... 10 {
                 _ = SudokuSolver().solve(sudoku: evil)
@@ -33,7 +46,8 @@ class SudokuSolverPerformanceTests: XCTestCase {
 extension SudokuSolverPerformanceTests {
     
     static var allTests = [
-        ("testSolveEvilSudoku", testSolveEvilSudoku),
+        ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
+        ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
     ]
     
 }

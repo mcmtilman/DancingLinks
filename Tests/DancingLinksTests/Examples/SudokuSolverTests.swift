@@ -98,8 +98,28 @@ class SudokuSolverTests: XCTestCase {
         }
     }
 
-    // Test solving the evil sudoku.
-    func testSolveEvilSudoku() {
+    // Test solving the evil sudoku using ClassyDancingLinks.
+    func testSolveClassyEvilSudoku() {
+        let string = """
+            812753649
+            943682175
+            675491283
+            154237896
+            369845721
+            287169534
+            521974368
+            438526917
+            796318452
+            """
+        let evil = Sudokus.evil
+        let solution = SudokuSolver().solve(sudoku: evil, algorithm: ClassyDancingLinks())
+        
+        XCTAssertNotNil(solution)
+        XCTAssertEqual(solution, Sudoku(string: string))
+    }
+    
+    // Test solving the evil sudoku using StructuredDancingLinks.
+    func testSolveStructuredEvilSudoku() {
         let string = """
             812753649
             943682175
@@ -118,7 +138,7 @@ class SudokuSolverTests: XCTestCase {
         XCTAssertEqual(solution, Sudoku(string: string))
     }
     
-    // Test if we can solve a large (20x2) sudoku.
+   // Test if we can solve a large (20x2) sudoku.
     // Leave the top row cells empty.
     func testSolveLargeSudoku() {
         var values = [Int?](repeating: nil, count: 1600)
@@ -169,7 +189,8 @@ extension SudokuSolverTests {
         ("testCompleteConstraints", testCompleteConstraints),
         ("testEmptyConstraints", testEmptyConstraints),
         ("testEmptyGrid", testEmptyGrid),
-        ("testSolveEvilSudoku", testSolveEvilSudoku),
+        ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
+        ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
         ("testSolveLargeSudoku", testSolveLargeSudoku),
     ]
 

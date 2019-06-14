@@ -43,8 +43,7 @@ fileprivate struct MockDancingLinks: DancingLinks {
             guard !state.terminated else { return }
             
             handler(Solution<R>(rows: rows), state)
-        }
-        
+        }        
     }
     
 }

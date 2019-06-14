@@ -12,6 +12,7 @@
  */
 fileprivate struct Store<RowId> where RowId: Hashable {
 
+    // Represents a row node, a column node or a header node.
     struct Node: Equatable {
         
         // Nodes with same reference are equal.
@@ -155,20 +156,20 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // MARK: DancingLinks search operations
     
-    // Covers (removes node from grid) the node by
-    // * horizontally unlinking its column node,
-    // * vertically unlinking any node that uses this column's constraint.
-    // Updates column sizes.
+    // Covers (removes node from the grid) the column node by
+    // * unlinking it from its row,
+    // * unlinking any node that uses the column's constraint from that node's column.
+    // Updates the column sizes.
     mutating func coverNode(_ node: Node) {
         let columnNode = column(of: node)
         var vNode = down(columnNode)
         
-        unlinkHorizontal(node: columnNode)
+        unlinkFromRow(node: columnNode)
         while vNode != columnNode {
             var hNode = right(vNode)
 
             while hNode != vNode {
-                unlinkVertical(node: hNode)
+                unlinkFromColumn(node: hNode)
                 nodes[hNode.column].size -= 1
                 hNode = right(hNode)
             }
@@ -176,10 +177,10 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         }
     }
     
-    // Uncovers (re-inserts node in the grid) the node by
-    // * vertically re-linking any node that uses this column's constraint,
-    // * horizontally re-linking its column node.
-    // Updates column sizes.
+    // Uncovers (re-inserts node in the grid) the column node by
+    // * re-linking any node that uses this column's constraint in that node's  column,
+    // * re-linking it in its row.
+    // Updates the column sizes.
     mutating func uncoverNode(_ node: Node) {
         let columnNode = column(of: node)
         var vNode = up(columnNode)
@@ -189,34 +190,34 @@ fileprivate struct Store<RowId> where RowId: Hashable {
 
             while hNode != vNode {
                 nodes[hNode.column].size += 1
-                relinkVertical(node: hNode)
+                relinkInColumn(node: hNode)
                 hNode = left(hNode)
             }
             vNode = up(vNode)
         }
-        relinkHorizontal(node: columnNode)
+        relinkInRow(node: columnNode)
     }
     
-    // Re-inserts the node in its proper place in the horizontal list.
-    mutating func relinkHorizontal(node: Node) {
+    // Re-inserts the node in its row.
+    mutating func relinkInRow(node: Node) {
         nodes[node.left].right = node.id
         nodes[node.right].left = node.id
     }
     
-    // Re-inserts the node in its proper place in the vertical list.
-    mutating func relinkVertical(node: Node) {
+    // Re-inserts the node in its column.
+    mutating func relinkInColumn(node: Node) {
         nodes[node.up].down = node.id
         nodes[node.down].up = node.id
     }
 
-    // Removes the node from the horizontal list.
-    mutating func unlinkHorizontal(node: Node) {
+    // Removes the node from its row.
+    mutating func unlinkFromRow(node: Node) {
         nodes[node.left].right = node.right
         nodes[node.right].left = node.left
     }
     
-    // Removes the node from the vertical list.
-    mutating func unlinkVertical(node: Node) {
+    // Removes the node from its column.
+    mutating func unlinkFromColumn(node: Node) {
         nodes[node.up].down = node.down
         nodes[node.down].up = node.up
     }
@@ -268,11 +269,13 @@ public class StructuredDancingLinks: DancingLinks {
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+        guard grid.constraints > 0 else { return }
+
         var store = Store<R>(size: 2 * grid.constraints + 1)
         let headerId = store.makeHeaderNode(columnNodes: (0 ..< grid.constraints).map { store.makeColumnNode(column: $0) }).id
         let state = SearchState()
         var rows = [R]()
-        
+
         // For each row in the grid, adds a node with given row id for each column in the row.
         func addRowNodes() {
             grid.generateRows { (row: R, columns: Int...) in
@@ -282,10 +285,10 @@ public class StructuredDancingLinks: DancingLinks {
             }
         }
         
-        // Returns an available column node according to the chosen strategy.
+        // Returns a column node according to the chosen strategy.
+        // The header has at least one linked column.
         func selectColumn(_ header: Store<R>.Node) -> Store<R>.Node {
             guard strategy == .minimumSize else { return store.right(header) }
-
             var column = store.right(header), node = store.right(column)
             
             while node != header {
@@ -298,6 +301,7 @@ public class StructuredDancingLinks: DancingLinks {
         
         // Recursively search for a solution until we have exhausted all options.
         // When all columns have been covered, pass the solution to the handler.
+        // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
         // Note. Parameter k is not really needed but may be useful for e.g. debugging.
         func solve(_ k: Int) {
