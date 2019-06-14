@@ -297,6 +297,8 @@ fileprivate extension Node {
             self.node = start
         }
         
+        // MARK: Iterating
+        
         // Returns the next node or nil as soon as we return to the start node.
         mutating func next() -> Node? {
             node = nextNode(node)
@@ -306,6 +308,8 @@ fileprivate extension Node {
         
     }
     
+    // MARK: Default iterators
+
     // Iterates through the nodes in a column, starting at the node immediately below the start node.
     var downNodes: Iterator {
         Iterator(self) { $0.down }
@@ -328,6 +332,7 @@ fileprivate extension Node {
 
 }
 
+
 /**
  Implementation of the DancingLinks algorithm using classes for nodes.
  */
@@ -345,6 +350,7 @@ class ClassyDancingLinks: DancingLinks {
         let state = SearchState()
         var rows = [R]()
         
+        // For each row in the grid, adds a node with given row id for each column in the row.
         func addRowNodes() {
             grid.generateRows { (row: R, columns: Int...) in
                 guard let column = columns.first else { return }
