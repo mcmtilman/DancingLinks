@@ -42,8 +42,28 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Releases the nodes in this column and clears the links to other nodes.
         override func release() {
             super.release()
-            for node in nodes { node.release() }
+            for node in nodes {
+                node.release()
+            }
             nodes = []
+        }
+        
+        // MARK: Constructing grid
+        
+        // Inserts a new node for given row at the bottom of the column.
+        // Returns the new node.
+        // Updates the column sizes.
+        func appendNode(row: RowId) -> Node {
+            let node = Node(row: row, column: self)
+            
+            nodes.append(node)
+            node.up = up
+            node.down = self
+            up.down = node
+            up = node
+            size += 1
+            
+            return node
         }
         
         // MARK: DancingLinks search operations
@@ -52,7 +72,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // * unlinking it from its row,
         // * unlinking any node that uses this column's constraint from that node's column.
         // Updates the column sizes.
-       override func cover() {
+        override func cover() {
             unlinkFromRow()
             for vNode in downNodes {
                 for hNode in vNode.rightNodes {
@@ -74,22 +94,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
                 }
             }
             relinkInRow()
-        }
-        
-        // Inserts a new node for given row at the bottom of the column.
-        // Returns the new node.
-        // Updates the column sizes.
-        func appendNode(row: RowId) -> Node {
-            let node = Node(row: row, column: self)
-            
-            nodes.append(node)
-            node.up = up
-            node.down = self
-            up.down = node
-            up = node
-            size += 1
-
-            return node
         }
         
     }
@@ -211,6 +215,19 @@ fileprivate class Node<RowId> where RowId: Hashable {
         (_left, _down, _right, _up, _column) = (nil, nil, nil, nil, nil)
     }
     
+    // MARK: Constructing grid
+    
+    // Inserts the node on the right of this node.
+    // Returns the inserted node.
+    func insertRightNode(_ node: Node) -> Node {
+        node.left = self
+        node.right = right
+        right.left = node
+        right = node
+        
+        return node
+    }
+    
     // MARK: DancingLinks search operations
     
     // Covers the node's column node.
@@ -223,17 +240,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // See selectColumn method for purpose of this method.
     func uncover() {
         column.uncover()
-    }
-    
-    // Inserts the node on the right of this node.
-    // Returns the inserted node.
-    func insertRightNode(_ node: Node) -> Node {
-        node.left = self
-        node.right = right
-        right.left = node
-        right = node
-        
-        return node
     }
     
     // Re-inserts the node in its row.
