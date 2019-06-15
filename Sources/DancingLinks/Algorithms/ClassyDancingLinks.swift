@@ -10,7 +10,7 @@
 fileprivate class Node<RowId> where RowId: Hashable {
     
     // Row node at the intersection of a row and a constraint column.
-    class RowNode: Node {
+    class Row: Node {
         
         // MARK: Initializing
         
@@ -31,7 +31,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // Strong references to the row nodes of this column, separate from links.
         // Used for release process.
-        private var nodes = [RowNode]()
+        private var nodes = [Row]()
         
         // Number of row nodes in this column.
         // Varies dynamically during covering/ uncovering process.
@@ -63,7 +63,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Returns the new node.
         // Updates the column sizes.
         func appendNode(row: RowId) -> Node {
-            let node = RowNode(row: row, column: self)
+            let node = Row(row: row, column: self)
 
             nodes.append(node)
             node.up = up
