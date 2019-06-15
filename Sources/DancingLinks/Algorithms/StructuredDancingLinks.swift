@@ -92,7 +92,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         nodes.reserveCapacity(size)
     }
 
-    // MARK: Accessing
+    // MARK: Subscript accessing
     
     // Returns the node with given id.
     subscript(node: Int) -> Node {

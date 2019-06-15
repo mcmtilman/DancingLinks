@@ -6,17 +6,32 @@
 //  Licensed under Apache License v2.0.
 //
 
-// A node in the grid. Subclasses represent column and header nodes.
+// A node in the grid. Subclasses represent row, column and header nodes.
 fileprivate class Node<RowId> where RowId: Hashable {
+    
+    // Row node at the intersection of a row and a constraint column.
+    class RowNode: Node {
+        
+        // MARK: Initializing
+        
+       // Initializes the row node's reference and column.
+        convenience init(row: RowId, column: Column) {
+            self.init()
+            self.row = row
+            self.column = column
+
+        }
+        
+    }
     
     // Column node referencing the row nodes in the same column.
     class Column: Node {
         
         // MARK: Stored properties
         
-        // Strong references to the nodes of this column, separate from links.
+        // Strong references to the row nodes of this column, separate from links.
         // Used for release process.
-        private var nodes = [Node]()
+        private var nodes = [RowNode]()
         
         // Number of row nodes in this column.
         // Varies dynamically during covering/ uncovering process.
@@ -31,12 +46,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
             _column = self
         }
         
-        // Initializes the row node's row id and column.
-        // Fails for columns.
-        init(row: RowId, column: Column) {
-            assert(false, "Not supported for columns")
-        }
-
         // MARK: Releasing
         
         // Releases the nodes in this column and clears the links to other nodes.
@@ -54,8 +63,8 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Returns the new node.
         // Updates the column sizes.
         func appendNode(row: RowId) -> Node {
-            let node = Node(row: row, column: self)
-            
+            let node = RowNode(row: row, column: self)
+
             nodes.append(node)
             node.up = up
             node.down = self
@@ -111,7 +120,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // Initializes the header node with the column nodes.
         // Constructs a row consting of the header node and the column nodes.
-        init(_ columns: [Column]) {
+        init(columns: [Column]) {
             self.columns = columns
             super.init()
             for column in columns {
@@ -194,18 +203,11 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // Nil for headers and columns.
     var row: RowId?
     
-    // MARK: Initializing
+    // MARK: Private initializing
     
     // Initializes the linked node properties to this node.
-    init() {
+    private init() {
         (_left, _down, _right, _up) = (self, self, self, self)
-    }
-    
-    // Initializes the row node's row id and column.
-    convenience init(row: RowId, column: Column) {
-        self.init()
-        self.row = row
-        self.column = column
     }
     
     // MARK: Releasing
@@ -346,7 +348,7 @@ class ClassyDancingLinks: DancingLinks {
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
         
-        let header = Node<R>.Header((0 ..< grid.constraints).map { _ in Node.Column() })
+        let header = Node<R>.Header(columns: (0 ..< grid.constraints).map { _ in Node.Column() })
         let state = SearchState()
         var rows = [R]()
         
@@ -386,7 +388,7 @@ class ClassyDancingLinks: DancingLinks {
             
             column.cover()
             for vNode in column.downNodes {
-                rows.append(vNode.row!)
+                rows.append(vNode.row!) // vNode is a row node with a non-nil row.
                 for node in vNode.rightNodes {
                     node.cover()
                 }
