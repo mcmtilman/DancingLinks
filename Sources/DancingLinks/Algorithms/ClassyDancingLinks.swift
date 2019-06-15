@@ -149,6 +149,12 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
     }
     
+    // MARK: Stored properties
+    
+    // Client row reference. Same for all nodes in the same row.
+    // Unused (nil) for headers and columns.
+    private (set) var row: RowId?
+    
     // MARK: Private stored properties
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
@@ -161,10 +167,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // Not nil after initialization until explicit release.
     // Private to hide the implicitly unwrapped behavior to the client (this has a cost).
     private var _column: Column!
-    
-    // Client row reference. Same for all nodes in the same row.
-    // Unused (nil) for headers and columns.
-    private (set) var row: RowId?
     
     // MARK: Computed properties
     
