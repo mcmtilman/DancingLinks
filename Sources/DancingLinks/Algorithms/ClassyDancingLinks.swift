@@ -162,6 +162,10 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // Private to hide the implicitly unwrapped behavior to the client (this has a cost).
     private var _column: Column!
     
+    // Client row reference. Same for all nodes in the same row.
+    // Unused (nil) for headers and columns.
+    private (set) var row: RowId?
+    
     // MARK: Computed properties
     
     // The column node of this node, or the node itself in case of header and column nodes.
@@ -198,10 +202,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
         set { _up = newValue }
         get { _up }
     }
-    
-    // Client row reference. Same for all nodes in the same row.
-    // Nil for headers and columns.
-    var row: RowId?
     
     // MARK: Private initializing
     
