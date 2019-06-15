@@ -32,6 +32,8 @@ The *StructuredDancingLinks* algorithm is struct-based, and, sort of implements 
 
 The sudoku example supports creating sudokus with other dimensions than the regular 9 x 9 grid (which consists of 9 rows, 9 columns and 9 3-by-3 boxes). This also includes creating sudokus with non-square boxes. For instance, a 4-by-3 box results in a sudoku with 12 rows, 12 columns, 12 4-by-3 boxes of 4 rows and 3 columns each, and 144 grid cells.
 
+A valid sudoku puzzle can be solved with either of the two Swift algorithms, the fastest algorithm being the default.
+
 # Requirements
 
 Swift 5.1
