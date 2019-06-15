@@ -6,7 +6,7 @@ Swift implementations of Knuth's *Dancing Links* algorithm (see also DLX and alg
 
 ## Scala and Pharo implementations
 
-An initial, straightforward implementation was first developed in *Scala*. This algorithm was able to solve the 'evil' sudoku below in less than 1 ms.
+An initial, straightforward implementation was first developed in *Scala* based on an existing *Java* example, but with some additional abstractions. The Java and Scala algorithms were able to solve the 'evil' sudoku (cf. below) in less than 1 ms.
 
     8........
     ..36.....
@@ -18,13 +18,15 @@ An initial, straightforward implementation was first developed in *Scala*. This 
     ..85...1.
     .9....4..
 
-A straightforward port to *Pharo* resulted in about 5 ms for the same sudoku, which was better than expected.
+A straightforward port to *Pharo* resulted in about 5 ms for solving the same sudoku, which was better than expected.
 
 ## Pure Swift implementations
 
 The *ClassyDancingLinks* algorithm also uses classes to represent the nodes of the Dancing Links grid. The grid is a sparse implementation of a constraint matrix, where the elements (nodes) are connected to other nodes in the same row and column by means of doubly-linked lists. Once the grid is set up, the bulk of the computation of the Dancing Links algorithm consists in unlinking and relinking nodes from and to the lists, resulting in constant updates of object references. Since ARC does not deal well with cycles in the context of this algorithm, the choice was made to not use weak or unowned references (initial tests indicated no real performance gains). Instead, the algorithm keeps track of the nodes in the grid using strong references, and explicitly releases the grid nodes at the end. This implementation takes about 11 ms when using the included performance test case within XCode (using release builds; option SWIFT_ENFORCE_EXCLUSIVE_ACCESS = debug-only).
 
 The *StructuredDancingLinks* algorithm is struct-based, and, sort of implements its own memory management. A *node store* manages the links between the struct nodes (links are just indices in the node store array). This algorithm also foregoes simple iterator abstractions to loop over the doubly-linked lists. This algorithm is about 6-7 times faster than *ClassyDancingLinks* for the evil sudoku, requiring about 1.7 ms.
+
+Implementing a version of the algorithm in Swift approximating the performance of the Scala solution turned out to be a bit harder than expected.
 
 # Examples
 
