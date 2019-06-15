@@ -19,7 +19,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
             self.init()
             self.row = row
             self.column = column
-
         }
         
     }
@@ -34,7 +33,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         private var nodes = [Row]()
         
         // Number of row nodes in this column.
-        // Varies dynamically during covering/ uncovering process.
+        // Varies dynamically during the covering / uncovering process.
         // At all times <= nodes.count.
         private (set) var size = 0
         
@@ -109,7 +108,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // A header node shares its row with the column nodes.
     // It has no row nodes in its column.
-    class Header: Column {
+    class Header: Node {
         
         // MARK: Stored properties
         
