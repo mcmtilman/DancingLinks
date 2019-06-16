@@ -12,7 +12,7 @@ import XCTest
 /**
  Known sudokus.
  */
-enum Sudokus {
+extension Sudoku {
     
     static let evil = Sudoku(values: [
         8, nil, nil, nil, nil, nil, nil, nil, nil,
@@ -479,7 +479,7 @@ class SudokuTests: XCTestCase {
             nil, 9, nil, nil, nil, nil, 4, nil, nil
         ]
         
-        XCTAssertEqual(Sudoku(values: values), Sudokus.evil)
+        XCTAssertEqual(Sudoku(values: values), Sudoku.evil)
     }
     
     // Test if the evil sudoku is not the same as the one created here.
@@ -497,15 +497,15 @@ class SudokuTests: XCTestCase {
             nil, 9, nil, nil, nil, nil, 4, nil, 5
         ]
         
-        XCTAssertNotEqual(Sudoku(values: values), Sudokus.evil)
+        XCTAssertNotEqual(Sudoku(values: values), Sudoku.evil)
     }
     
     // Test accessing values using subscripts.
     func testSubscript() {
-        XCTAssertEqual(Sudokus.evil[0], 8)
-        XCTAssertNil(Sudokus.evil[80])
-        XCTAssertEqual(Sudokus.evil[0, 0], 8)
-        XCTAssertNil(Sudokus.evil[8, 8])
+        XCTAssertEqual(Sudoku.evil[0], 8)
+        XCTAssertNil(Sudoku.evil[80])
+        XCTAssertEqual(Sudoku.evil[0, 0], 8)
+        XCTAssertNil(Sudoku.evil[8, 8])
     }
 
     // Test completeness of a sudoku.

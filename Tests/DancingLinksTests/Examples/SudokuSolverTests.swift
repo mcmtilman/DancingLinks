@@ -111,7 +111,7 @@ class SudokuSolverTests: XCTestCase {
             438526917
             796318452
             """
-        let evil = Sudokus.evil
+        let evil = Sudoku.evil
         let solution = SudokuSolver().solve(sudoku: evil, algorithm: ClassyDancingLinks())
         
         XCTAssertNotNil(solution)
@@ -131,7 +131,7 @@ class SudokuSolverTests: XCTestCase {
             438526917
             796318452
             """
-        let evil = Sudokus.evil
+        let evil = Sudoku.evil
         let solution = SudokuSolver().solve(sudoku: evil)
         
         XCTAssertNotNil(solution)

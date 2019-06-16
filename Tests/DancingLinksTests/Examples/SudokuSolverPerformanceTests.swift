@@ -16,7 +16,7 @@ class SudokuSolverPerformanceTests: XCTestCase {
     
     // Test solving the evil sudoku using ClassyDancingLinks.
     func testSolveClassyEvilSudoku() {
-        let evil = Sudokus.evil
+        let evil = Sudoku.evil
         let algorithm = ClassyDancingLinks()
         
         measure {
@@ -28,7 +28,7 @@ class SudokuSolverPerformanceTests: XCTestCase {
     
     // Test solving the evil sudoku using StructuredDancingLinks.
     func testSolveStructuredEvilSudoku() {
-        let evil = Sudokus.evil
+        let evil = Sudoku.evil
         
         measure {
             for _ in 1 ... 10 {
