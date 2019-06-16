@@ -45,7 +45,7 @@ extension Sudoku: Grid {
             for column in 0 ..< size {
                 let index = row * size + column
 
-                for value in (options[index]) {
+                for value in options[index] {
                     let rowId = Cell(index: index, value: value)
                     let cellConstraint = index
                     let rowConstraint = cells + row * size + value - 1
@@ -63,7 +63,7 @@ extension Sudoku: Grid {
     // For a non-empty cell returns a singleton set containing the given.
     private func remainingOptions(_ rows: Int, _ columns: Int, _ size: Int) -> [BitSet] {
         let set = BitSet(1 ... size)
-        var options = values.map { v in  v == nil ? set : BitSet(v!) }
+        var options = values.map { $0.map { BitSet($0) } ?? set }
         var i = 0
 
         for _ in 0 ..< size {
