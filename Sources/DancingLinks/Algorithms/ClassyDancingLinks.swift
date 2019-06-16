@@ -24,11 +24,12 @@ fileprivate class Node<RowId> where RowId: Hashable {
     }
     
     // Column node referencing the row nodes in the same column.
+    // Is its own column node.
     class Column: Node {
         
         // MARK: Stored properties
         
-        // Strong references to the row nodes of this column, separate from links.
+        // References to the row nodes of this column, separate from the links.
         // Used for release process.
         private var nodes = [Row]()
         
@@ -42,7 +43,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Initializes the column to this node.
         override init() {
             super.init()
-            _column = self
+            column = self
         }
         
         // MARK: Releasing
@@ -60,7 +61,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // Inserts a new node for given row at the bottom of the column.
         // Returns the new node.
-        // Updates the column sizes.
+        // Increments the column size.
         func appendNode(row: RowId) -> Node {
             let node = Row(row: row, column: self)
 
@@ -108,11 +109,13 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // A header node shares its row with the column nodes.
     // It has no row nodes in its column.
-    class Header: Node {
+    // Is its own column node.
+    class Header: Column {
         
         // MARK: Stored properties
         
-        // Strong references to the column nodes for this header, separate from the grid links.
+        // References to the column nodes for this header, separate from the links.
+        // Used for release process.
         private var columns: [Column]
         
         // MARK: Initializing
@@ -158,64 +161,25 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    // Private to hide the implicitly unwrapped behavior to client (this has a cost).
-    private var _down, _left, _right, _up: Node!
+    var down, left, right, up: Node!
     
     // Column node.
     // Points to the node itself in case of headers and columns.
-    // Not nil after initialization until explicit release.
-    // Private to hide the implicitly unwrapped behavior to the client (this has a cost).
-    private var _column: Column!
-    
-    // MARK: Computed properties
-    
-    // The column node of this node, or the node itself in case of header and column nodes.
-    // Hides the implicitly unwrapped behavior of the underlying stored property.
-    var column: Column {
-        set { _column = newValue }
-        get { _column }
-    }
-    
-    // The node immediately below this node (may be the node itself).
-    // Hides the implicitly unwrapped behavior of the underlying stored property.
-    var down: Node {
-        set { _down = newValue }
-        get { _down }
-    }
-    
-    // The node immediately to the left of this node (may be the node itself).
-    // Hides the implicitly unwrapped behavior of the underlying stored property.
-    var left: Node {
-        set { _left = newValue }
-        get { _left }
-    }
-    
-    // The node immediately to the right of this node (may be the node itself).
-    // Hides the implicitly unwrapped behavior of the underlying stored property.
-    var right: Node {
-        set { _right = newValue }
-        get { _right }
-    }
-    
-    // The node immediately above this node (may be the node itself).
-    // Hides the implicitly unwrapped behavior of the underlying stored property.
-    var up: Node {
-        set { _up = newValue }
-        get { _up }
-    }
+    // Not nil after initialization in subclasses until explicit release.
+    var column: Column!
     
     // MARK: Private initializing
     
     // Initializes the linked node properties to this node.
     private init() {
-        (_left, _down, _right, _up) = (self, self, self, self)
+        (left, down, right, up) = (self, self, self, self)
     }
     
     // MARK: Releasing
     
     // Clears the links to other nodes.
     func release() {
-        (_left, _down, _right, _up, _column) = (nil, nil, nil, nil, nil)
+        (left, down, right, up, column) = (nil, nil, nil, nil, nil)
     }
     
     // MARK: Constructing grid
@@ -231,7 +195,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         return node
     }
     
-    // MARK: DancingLinks search operations
+    // MARK: DancingLinks search operations delegation
     
     // Covers the node's column node.
     // See selectColumn method for purpose of this method.
@@ -244,6 +208,8 @@ fileprivate class Node<RowId> where RowId: Hashable {
     func uncover() {
         column.uncover()
     }
+    
+    // MARK: DancingLinks search operations
     
     // Re-inserts the node in its row.
     func relinkInRow() {
@@ -365,10 +331,10 @@ class ClassyDancingLinks: DancingLinks {
         // Returns a column node according to the chosen strategy.
         // The header has at least one linked column.
         // Note. The return type could be Column. We avoid the cast and use delegation to the column node
-        // itself in the cover and uncover operations in class Node.
+        // itself for the size and for the cover and uncover operations (cf. solve method).
         func selectColumn() -> Node<R> {
             guard strategy == .minimumSize else { return header.right }
-            var column = header.right
+            var column: Node<R> = header.right
             
             for node in header.rightNodes where node.column.size < column.column.size {
                 column = node
@@ -381,8 +347,7 @@ class ClassyDancingLinks: DancingLinks {
         // When all columns have been covered, pass the solution to the handler.
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
-        // Note. Parameter k is not really needed but may be useful for e.g. debugging.
-        func solve(_ k: Int) {
+        func solve() {
             guard header.right !== header else { return handler(Solution(rows: rows), state) }
 
             let column = selectColumn()
@@ -393,7 +358,7 @@ class ClassyDancingLinks: DancingLinks {
                 for node in vNode.rightNodes {
                     node.cover()
                 }
-                solve(k + 1)
+                solve()
                 guard !state.terminated else { return }
                 rows.removeLast()
                 for node in vNode.leftNodes {
@@ -404,7 +369,7 @@ class ClassyDancingLinks: DancingLinks {
         }
 
         addRowNodes()
-        _ = solve(0)
+        _ = solve()
         header.release()
     }
     

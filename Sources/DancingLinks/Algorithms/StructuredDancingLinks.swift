@@ -303,8 +303,7 @@ public class StructuredDancingLinks: DancingLinks {
         // When all columns have been covered, pass the solution to the handler.
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
-        // Note. Parameter k is not really needed but may be useful for e.g. debugging.
-        func solve(_ k: Int) {
+        func solve() {
             let header = store[headerId]
             guard store.right(header) != header else { return handler(Solution(rows: rows), state) }
             
@@ -321,7 +320,7 @@ public class StructuredDancingLinks: DancingLinks {
                     hNode = store.right(hNode)
                 }
                 
-                solve(k + 1)
+                solve()
                 guard !state.terminated else { return }
                 
                 rows.removeLast()
@@ -336,7 +335,7 @@ public class StructuredDancingLinks: DancingLinks {
         }
 
         addRowNodes()
-        solve(0)
+        solve()
     }
     
 }
