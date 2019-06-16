@@ -270,7 +270,6 @@ public class StructuredDancingLinks: DancingLinks {
     /// The search strategy may affect the performance and the order in which solutions are generated.
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
-
         var store = Store<R>(size: 2 * grid.constraints + 1)
         let headerId = store.makeHeaderNode(columnNodes: (0 ..< grid.constraints).map { store.makeColumnNode(column: $0) }).id
         let state = SearchState()
@@ -306,7 +305,6 @@ public class StructuredDancingLinks: DancingLinks {
         func solve() {
             let header = store[headerId]
             guard store.right(header) != header else { return handler(Solution(rows: rows), state) }
-            
             let column = selectColumn(header)
             var vNode = store.down(column)
             

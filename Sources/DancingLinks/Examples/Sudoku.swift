@@ -205,7 +205,6 @@ extension Sudoku {
     // Note. (46, 48) = ascii codes of (".", "0").
     init?(string: String, rows: Int = 3, columns: Int = 3) {
         guard let dimensions = Dimensions(rows: rows, columns: columns) else { return nil }
-
         let size = dimensions.cells
         guard size >= 4, size <= 9 else { return nil }
 

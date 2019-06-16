@@ -325,7 +325,6 @@ class ClassyDancingLinks: DancingLinks {
     /// The search strategy may affect the performance and the order in which solutions are generated.
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
-        
         let header = Node<R>.Header(columns: (0 ..< grid.constraints).map { _ in Node.Column() })
         let state = SearchState()
         var rows = [R]()
@@ -360,7 +359,6 @@ class ClassyDancingLinks: DancingLinks {
         // Stop searching when the handler sets the search state to terminated.
         func solve() {
             guard header.right !== header else { return handler(Solution(rows: rows), state) }
-
             let column = selectColumn()
             
             column.cover()
