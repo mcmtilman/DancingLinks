@@ -161,12 +161,12 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    weak var down, left, right, up: Node!
+    var down, left, right, up: Node!
     
     // Column node.
     // Points to the node itself in case of headers and columns.
     // Not nil after initialization in subclasses until explicit release.
-    weak var column: Column!
+    var column: Column!
     
     // MARK: Private initializing
     
@@ -240,63 +240,74 @@ fileprivate class Node<RowId> where RowId: Hashable {
 
 // Iterates the nodes in four directions: down, left, right, up, skipping the start node.
 // Iteration halts when we return to the start node.
-fileprivate extension Node {
+extension Node {
     
-    // Uses a function to calculate the next node from the current node.
+    // Direction of iteration:
+    // * along the row nodes (left, right)
+    // * along the column nodes (down, up).
+    enum Direction {
+        case down, left, right, up
+    }
+    
+    // Calculates the next node from the current node.
     // Stops when the next node is the same as the start node.
     struct Iterator: Sequence, IteratorProtocol {
         
         // MARK: Stored properties
         
-        // Calculates the next node from the current node.
-        let nextNode: (Node) -> Node
+        // Direction of iteration
+        private let direction: Direction
         
         // Start node. Iteration stops when nextNode === start.
-        let start: Node
+        private let start: Node
         
         // Current node.
-        var node: Node
+        private var node: Node
         
         // MARK: Initializing
         
         // Initializes the iterator with a start (also end) node, and a function computing the next node.
-        init(_ start: Node, _ nextNode: @escaping (Node) -> Node) {
-            self.nextNode = nextNode
+        init(_ start: Node, _ direction: Direction) {
+            self.direction = direction
             self.start = start
             self.node = start
         }
-        
+
         // MARK: Iterating
         
         // Returns the next node or nil as soon as we return to the start node.
         mutating func next() -> Node? {
-            node = nextNode(node)
+            switch direction {
+            case .down: node = node.down
+            case .left: node = node.left
+            case .right: node = node.right
+            case .up: node = node.up
+            }
             
             return node === start ? nil : node
         }
-        
     }
     
     // MARK: Default iterators
 
     // Iterates through the nodes in a column, starting at the node immediately below the start node.
     var downNodes: Iterator {
-        Iterator(self) { $0.down }
+        Iterator(self, .down)
     }
 
     // Iterates through the nodes in a row, starting at the node immediately to the left of the start node.
     var leftNodes: Iterator {
-        Iterator(self) { $0.left }
+        Iterator(self, .left)
     }
 
     // Iterates through the nodes in a row, starting at the node immediately to the right of the start node.
     var rightNodes: Iterator {
-        Iterator(self) { $0.right }
+        Iterator(self, .right)
     }
 
     // Iterates through the nodes in a column, starting at the node immediately above the start node.
     var upNodes: Iterator {
-        Iterator(self) { $0.up }
+        Iterator(self, .up)
     }
 
 }
