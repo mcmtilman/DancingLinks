@@ -161,12 +161,12 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    var down, left, right, up: Node!
+    weak var down, left, right, up: Node!
     
     // Column node.
     // Points to the node itself in case of headers and columns.
     // Not nil after initialization in subclasses until explicit release.
-    var column: Column!
+    weak var column: Column!
     
     // MARK: Private initializing
     
