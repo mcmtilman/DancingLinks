@@ -354,7 +354,7 @@ class ClassyDancingLinks: DancingLinks {
             
             column.cover()
             for vNode in column.downNodes {
-                rows.append(vNode.row!) // vNode is a row node with a non-nil row.
+                rows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
                 for node in vNode.rightNodes {
                     node.cover()
                 }
