@@ -18,7 +18,9 @@ An initial, straightforward implementation was first developed in *Scala* based 
     ..85...1.
     .9....4..
 
-A straightforward port to *Pharo* resulted in about 5 ms for solving the same sudoku, which was better than expected.
+A straightforward port to *Pharo* resulted in about 3.5 ms for solving the same sudoku, much better than expected.
+
+Note that both the Pharo and Scala implementations assumed a regular 9-by-9 grid sudoku, which simplified some parts of the code.
 
 ## Pure Swift implementations
 
