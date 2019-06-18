@@ -90,151 +90,6 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         nodes = [Node]()
         nodes.reserveCapacity(size)
     }
-
-    // MARK: Creation operations for the grid.
-    
-    // Inserts a new node for given row at the bottom of the column.
-    // Returns the new node.
-    mutating func appendNode(row: RowId, column: NodeId) -> NodeId {
-        let columnNode = nodes[column]
-        let node = makeNode(row: row, column: column)
-        
-        nodes[node].up = columnNode.up
-        nodes[node].down = columnNode.id
-        nodes[columnNode.up].down = node
-        nodes[columnNode.id].up = node
-        nodes[columnNode.id].size += 1
-
-        return node
-    }
-
-    // Inserts the node on the right of the other node.
-    // Returns the inserted node.
-    mutating func insertNode(_ node: NodeId, after left: NodeId) -> NodeId {
-        let right = nodes[left].right
-        
-        nodes[node].left = left
-        nodes[node].right = right
-        nodes[right].left = node
-        nodes[left].right = node
-
-        return node
-    }
-
-    // MARK: Accessing
-    
-    // Returns the node directly below given node.
-    func down(_ node: NodeId) -> NodeId {
-        nodes[node].down
-    }
-
-    // Returns the node directly to the left of given node.
-    func left(_ node: NodeId) -> NodeId {
-        nodes[node].left
-    }
-    
-    // Returns the node directly to the right of given node.
-    func right(_ node: NodeId) -> NodeId {
-        nodes[node].right
-    }
-    
-    // Returns the node directly above given node.
-    func up(_ node: NodeId) -> NodeId {
-        nodes[node].up
-    }
-
-    // Returns the column of given node.
-    func column(of node: NodeId) -> NodeId {
-        let nodeOrColumn = nodes[node]
-        
-        return nodeOrColumn.isColumn ? node : nodeOrColumn.column
-    }
-    
-    // Returns the row referebce of given node.
-    func row(of node: NodeId) -> RowId? {
-        nodes[node].row
-    }
-    
-    // Returns the size of given node.
-    func size(of node: NodeId) -> NodeId {
-        nodes[node].size
-    }
-    
-    // MARK: DancingLinks search operations
-    
-    // Covers (removes node from the grid) the node by
-    // * unlinking it from its row,
-    // * unlinking any node that uses the column's constraint from that node's column.
-    // Updates the column sizes.
-    mutating func coverNode(_ node: NodeId) {
-        let columnNode = column(of: node)
-        var vNode = down(columnNode)
-        
-        unlinkFromRow(node: columnNode)
-        while vNode != columnNode {
-            var hNode = right(vNode)
-
-            while hNode != vNode {
-                unlinkFromColumn(node: hNode)
-                nodes[nodes[hNode].column].size -= 1
-                hNode = right(hNode)
-            }
-            vNode = down(vNode)
-        }
-    }
-    
-    // Uncovers (re-inserts node in the grid) the node by
-    // * re-linking any node that uses this column's constraint in that node's column,
-    // * re-linking it in its row.
-    // Updates the column sizes.
-    mutating func uncoverNode(_ node: NodeId) {
-        let columnNode = column(of: node)
-        var vNode = up(columnNode)
-
-        while vNode != columnNode {
-            var hNode = left(vNode)
-
-            while hNode != vNode {
-                nodes[nodes[hNode].column].size += 1
-                relinkInColumn(node: hNode)
-                hNode = left(hNode)
-            }
-            vNode = up(vNode)
-        }
-        relinkInRow(node: columnNode)
-    }
-    
-    // Re-inserts the node in its row.
-    mutating func relinkInRow(node: NodeId) {
-        let left = nodes[node].left, right = nodes[node].right
-
-        nodes[left].right = node
-        nodes[right].left = node
-    }
-    
-    // Re-inserts the node in its column.
-    mutating func relinkInColumn(node: NodeId) {
-        let down = nodes[node].down, up = nodes[node].up
-
-        nodes[up].down = node
-        nodes[down].up = node
-    }
-
-    // Removes the node from its row.
-    mutating func unlinkFromRow(node: NodeId) {
-        let left = nodes[node].left, right = nodes[node].right
-        
-        nodes[left].right = right
-        nodes[right].left = left
-    }
-    
-    // Removes the node from its column.
-    mutating func unlinkFromColumn(node: NodeId) {
-        let down = nodes[node].down, up = nodes[node].up
-
-        nodes[up].down = down
-        nodes[down].up = up
-    }
     
     // MARK: Creating nodes
     
@@ -252,11 +107,124 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         
         return header
     }
-
+    
     // Makes a node for given row, column and adds it to the store.
     // Returns the node.
     mutating func makeNode(row: RowId, column: NodeId) -> NodeId {
         storeNode(Node(row: row, column: column, id: nextId))
+    }
+    
+    // MARK: Creating grid
+    
+    // Inserts a new node for given row at the bottom of the column.
+    // Returns the new node.
+    mutating func appendNode(row: RowId, column: NodeId) -> NodeId {
+        let columnNode = nodes[column]
+        let node = makeNode(row: row, column: column)
+        
+        nodes[node].up = columnNode.up
+        nodes[node].down = columnNode.id
+        nodes[columnNode.up].down = node
+        nodes[columnNode.id].up = node
+        nodes[columnNode.id].size += 1
+        
+        return node
+    }
+    
+    // Inserts the node on the right of the other node.
+    // Returns the inserted node.
+    mutating func insertNode(_ node: NodeId, after left: NodeId) -> NodeId {
+        let right = nodes[left].right
+        
+        nodes[node].left = left
+        nodes[node].right = right
+        nodes[right].left = node
+        nodes[left].right = node
+        
+        return node
+    }
+    
+    // MARK: Accessing
+    
+    // Returns the node directly below given node.
+    func down(_ node: NodeId) -> NodeId {
+        nodes[node].down
+    }
+    
+    // Returns the node directly to the left of given node.
+    func left(_ node: NodeId) -> NodeId {
+        nodes[node].left
+    }
+    
+    // Returns the node directly to the right of given node.
+    func right(_ node: NodeId) -> NodeId {
+        nodes[node].right
+    }
+    
+    // Returns the node directly above given node.
+    func up(_ node: NodeId) -> NodeId {
+        nodes[node].up
+    }
+    
+    // Returns the row referebce of given node.
+    func row(of node: NodeId) -> RowId? {
+        nodes[node].row
+    }
+    
+    // MARK: DancingLinks operations
+    
+    // Covers (removes node from the grid) the node by
+    // * unlinking it from its row,
+    // * unlinking any node that uses the column's constraint from that node's column.
+    // Updates the column sizes.
+    mutating func coverNode(_ node: NodeId) {
+        let columnNode = column(of: node)
+        var vNode = nodes[columnNode].down
+        
+        unlinkFromRow(node: columnNode)
+        while vNode != columnNode {
+            var hNode = nodes[vNode].right
+            
+            while hNode != vNode {
+                unlinkFromColumn(node: hNode)
+                nodes[nodes[hNode].column].size -= 1
+                hNode = nodes[hNode].right
+            }
+            vNode = nodes[vNode].down
+        }
+    }
+    
+    // Uncovers (re-inserts node in the grid) the node by
+    // * re-linking any node that uses this column's constraint in that node's column,
+    // * re-linking it in its row.
+    // Updates the column sizes.
+    mutating func uncoverNode(_ node: NodeId) {
+        let columnNode = column(of: node)
+        var vNode = nodes[columnNode].up
+        
+        while vNode != columnNode {
+            var hNode = nodes[vNode].left
+            
+            while hNode != vNode {
+                nodes[nodes[hNode].column].size += 1
+                relinkInColumn(node: hNode)
+                hNode = nodes[hNode].left
+            }
+            vNode = nodes[vNode].up
+        }
+        relinkInRow(node: columnNode)
+    }
+    
+    // Returns the first column with the least rows.
+    func smallestColumn(header: NodeId) -> NodeId {
+        var column = nodes[nodes[header].right], node = nodes[column.right]
+
+        while node.id != header {
+            if node.size < column.size { column = node }
+            node = nodes[node.right]
+        }
+
+        return column.id
     }
 
     // MARK: Private creating nodes
@@ -267,6 +235,49 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         nodes.append(node)
         
         return node.id
+    }
+    
+    // MARK: Private accessing
+    
+    // Returns the column of given node.
+    private func column(of node: NodeId) -> NodeId {
+        let nodeOrColumn = nodes[node]
+        
+        return nodeOrColumn.isColumn ? node : nodeOrColumn.column
+    }
+    
+    // MARK: Private DancingLinks operations
+    
+    // Re-inserts the node in its row.
+    private mutating func relinkInRow(node: NodeId) {
+        let left = nodes[node].left, right = nodes[node].right
+        
+        nodes[left].right = node
+        nodes[right].left = node
+    }
+    
+    // Re-inserts the node in its column.
+    private mutating func relinkInColumn(node: NodeId) {
+        let down = nodes[node].down, up = nodes[node].up
+        
+        nodes[up].down = node
+        nodes[down].up = node
+    }
+    
+    // Removes the node from its row.
+    private mutating func unlinkFromRow(node: NodeId) {
+        let left = nodes[node].left, right = nodes[node].right
+        
+        nodes[left].right = right
+        nodes[right].left = left
+    }
+    
+    // Removes the node from its column.
+    private mutating func unlinkFromColumn(node: NodeId) {
+        let down = nodes[node].down, up = nodes[node].up
+        
+        nodes[up].down = down
+        nodes[down].up = up
     }
     
 }
@@ -289,7 +300,7 @@ public class StructuredDancingLinks: DancingLinks {
         let header = store.makeHeaderNode(columnNodes: columnNodes)
         let state = SearchState()
         var solvedRows = [R]()
-
+        
         // For each row in the grid, adds a node with given row id for each column in the row.
         func addRowNodes() {
             grid.generateRows { (row: R, columns: Int...) in
@@ -301,16 +312,11 @@ public class StructuredDancingLinks: DancingLinks {
         
         // Returns a column node according to the chosen strategy.
         // The header has at least one linked column.
-        func selectColumn() -> Int {
-            guard strategy == .minimumSize else { return store.right(header) }
-            var column = store.right(header), node = store.right(column)
-            
-            while node != header {
-                if store.size(of: node) < store.size(of: column) { column = node }
-                node = store.right(node)
+        func selectColumn() -> Store<R>.NodeId {
+            switch strategy {
+            case .naive: return store.right(header)
+            case .minimumSize: return store.smallestColumn(header: header)
             }
-            
-            return column
         }
         
         // Recursively search for a solution until we have exhausted all options.
@@ -325,7 +331,7 @@ public class StructuredDancingLinks: DancingLinks {
             store.coverNode(column)
             while vNode != column {
                 var hNode = store.right(vNode)
-
+                
                 solvedRows.append(store.row(of: vNode)!)
                 while hNode != vNode {
                     store.coverNode(hNode)
@@ -345,7 +351,7 @@ public class StructuredDancingLinks: DancingLinks {
             }
             store.uncoverNode(column)
         }
-
+        
         addRowNodes()
         solve()
     }
