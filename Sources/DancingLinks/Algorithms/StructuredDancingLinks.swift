@@ -156,7 +156,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // MARK: DancingLinks search operations
     
-    // Covers (removes node from the grid) the column node by
+    // Covers (removes node from the grid) the node by
     // * unlinking it from its row,
     // * unlinking any node that uses the column's constraint from that node's column.
     // Updates the column sizes.
@@ -177,8 +177,8 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         }
     }
     
-    // Uncovers (re-inserts node in the grid) the column node by
-    // * re-linking any node that uses this column's constraint in that node's  column,
+    // Uncovers (re-inserts node in the grid) the node by
+    // * re-linking any node that uses this column's constraint in that node's column,
     // * re-linking it in its row.
     // Updates the column sizes.
     mutating func uncoverNode(_ node: Node) {
@@ -234,7 +234,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // Returns the header node.
     mutating func makeHeaderNode(columnNodes: [Node]) -> Node {
         let header = storeNode(Node(headerId: nextId))
-        let _ = columnNodes.reduce(header) { node, column in insertNode(column, after: node)}
+        let _ = columnNodes.reduce(header) { node, column in insertNode(column, after: node) }
         
         return nodes[header.id]
     }

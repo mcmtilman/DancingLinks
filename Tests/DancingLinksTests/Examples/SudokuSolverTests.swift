@@ -99,6 +99,25 @@ class SudokuSolverTests: XCTestCase {
     }
 
     // Test solving the evil sudoku using ClassyDancingLinks.
+    func testGenerateSolution() {
+        let string = """
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            .........
+            """
+        guard let sudoku = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
+        let solution = SudokuSolver().solve(sudoku: sudoku)
+        
+        XCTAssertNotNil(solution)
+    }
+    
+    // Test solving the evil sudoku using ClassyDancingLinks.
     func testSolveClassyEvilSudoku() {
         let string = """
             812753649
@@ -189,6 +208,7 @@ extension SudokuSolverTests {
         ("testCompleteConstraints", testCompleteConstraints),
         ("testEmptyConstraints", testEmptyConstraints),
         ("testEmptyGrid", testEmptyGrid),
+        ("testGenerateSolution", testGenerateSolution),
         ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
         ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
         ("testSolveLargeSudoku", testSolveLargeSudoku),
