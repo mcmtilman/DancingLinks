@@ -24,49 +24,46 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         // Reference to the column node in the store.
         let column: NodeId
         
+        // References to left, right, up and down nodes in the store.
+        var down, left, right, up: NodeId
+        
         // Reference of this node in the store.
         let id: NodeId
+        
+        // Flag denoting if mandatory (columns only).
+        // False for header and row nodes.
+        let mandatory: Bool
         
         // Client row reference. Same for all nodes in the same row.
         // Nil for headers and columns.
         let row: RowId?
         
-        // References to left, right, up and down nodes in the store.
-        var down, left, right, up: NodeId
-        
         // Number of row nodes in a column. Only used by column nodes.
         var size = 0
-        
-        // MARK: Computed properties
-        
-        // Returns true if this node is a column (or header) node, false otherwise.
-        var isColumn: Bool {
-            row == nil
-        }
         
         // MARK: Initializing
         
         // Initializes a column node.
-        init(column: NodeId) {
-            self.init(nil, column, column)
+        init(column: NodeId, mandatory: Bool) {
+            self.init(nil, column, column, mandatory)
         }
         
         // Initializes the header node.
         init(header: NodeId) {
-            self.init(nil, 0, header)
+            self.init(nil, header, header, false)
         }
         
         // Initializes a row node.
         init(row: RowId, column: NodeId, id: NodeId) {
-            self.init(row, column, id)
+            self.init(row, column, id, false)
         }
         
         // MARK: Private initializing
         
         // Initializes a header, column or row node.
         // Initially all references to linked nodes point to the node itself.
-        private init(_ r: RowId?, _ c: NodeId, _ i: NodeId) {
-            (id, left, right, up, down, row, column) = (i, i, i, i, i, r, c)
+        private init(_ r: RowId?, _ c: NodeId, _ i: NodeId, _ m: Bool) {
+            (id, left, right, up, down, row, column, mandatory) = (i, i, i, i, i, r, c, m)
         }
         
     }
@@ -95,8 +92,8 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // Creates a column node and adds it to the store.
     // Returns the column node.
-    mutating func makeColumnNode() -> NodeId {
-        storeNode(Node(column: nextId))
+    mutating func makeColumnNode(mandatory: Bool) -> NodeId {
+        storeNode(Node(column: nextId, mandatory: mandatory))
     }
     
     // Creates the header node with given column nodes and adds it to the store.
@@ -166,7 +163,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         nodes[node].up
     }
     
-    // Returns the row referebce of given node.
+    // Returns the row reference of given node.
     func row(of node: NodeId) -> RowId? {
         nodes[node].row
     }
@@ -187,7 +184,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
             
             while hNode != vNode {
                 unlinkFromColumn(node: hNode)
-                nodes[column(of: hNode)].size -= 1
+                updateColumnSize(of: hNode, with: -1)
                 hNode = right(hNode)
             }
             vNode = down(vNode)
@@ -206,7 +203,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
             var hNode = left(vNode)
             
             while hNode != vNode {
-                nodes[column(of: hNode)].size += 1
+                updateColumnSize(of: hNode, with: 1)
                 relinkInColumn(node: hNode)
                 hNode = left(hNode)
             }
@@ -215,18 +212,41 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         relinkInRow(node: columnNode)
     }
     
-    // Returns the first column with the least rows.
-    func smallestColumn(header: NodeId) -> NodeId {
-        var column = nodes[nodes[header].right], node = nodes[column.right]
-
-        while node.id != header {
+    // MARK: Search strategies
+    
+    // Returns the first mandatory column, or nil if none found.
+    // Note. Mandatory columns precede optional columns in the list.
+    func firstColumn(header: NodeId) -> NodeId? {
+        let columnId = nodes[header].right
+        guard columnId != header else { return nil }
+        
+        let column = nodes[columnId]
+        guard column.mandatory else { return nil }
+        
+        return columnId
+    }
+    
+    // Returns the first mandatory column with the least rows, or nil if none found.
+    // Note. Mandatory columns precede optional columns in the list.
+    func smallestColumn(header: NodeId) -> NodeId? {
+        let columnId = nodes[header].right
+        guard columnId != header else { return nil }
+        
+        var column = nodes[columnId]
+        guard column.mandatory else { return nil }
+        
+        var node = nodes[column.right]
+        
+        while node.mandatory {
             if node.size < column.size { column = node }
             node = nodes[node.right]
         }
 
         return column.id
     }
-
+    
+    // MARK: Testing
+    
     // MARK: Private creating nodes
     
     // Adds the node to the store.
@@ -242,6 +262,13 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // Returns the column of given node.
     private func column(of node: NodeId) -> NodeId {
         nodes[node].column
+    }
+    
+    // Update the column size with given amount.
+    private mutating func updateColumnSize(of node: NodeId, with amount: Int) {
+        let columnNode = column(of: node)
+        
+        nodes[columnNode].size += amount
     }
     
     // MARK: Private DancingLinks operations
@@ -293,8 +320,10 @@ public class StructuredDancingLinks: DancingLinks {
     /// The search strategy may affect the performance and the order in which solutions are generated.
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
-        var store = Store<R>(size: 2 * grid.constraints + 1)
-        let columnNodes = (0 ..< grid.constraints).map { _ in store.makeColumnNode() }
+        
+        let allConstraints = grid.constraints + grid.optionalConstraints
+        var store = Store<R>(size: 2 * allConstraints + 1)
+        let columnNodes = (0 ..< allConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
         let header = store.makeHeaderNode(columnNodes: columnNodes)
         let state = SearchState()
         var solvedRows = [R]()
@@ -308,11 +337,10 @@ public class StructuredDancingLinks: DancingLinks {
             }
         }
         
-        // Returns a column node according to the chosen strategy.
-        // The header has at least one linked column.
-        func selectColumn() -> Store<R>.NodeId {
+        // Returns a mandatory column node according to the chosen strategy, or nil if none found.
+        func selectColumn() -> Store<R>.NodeId? {
             switch strategy {
-            case .naive: return store.right(header)
+            case .naive: return store.firstColumn(header: header)
             case .minimumSize: return store.smallestColumn(header: header)
             }
         }
@@ -322,8 +350,7 @@ public class StructuredDancingLinks: DancingLinks {
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
         func solve() {
-            guard store.right(header) != header else { return handler(Solution(rows: solvedRows), state) }
-            let column = selectColumn()
+            guard let column = selectColumn() else { return handler(Solution(rows: solvedRows), state) }
             var vNode = store.down(column)
             
             store.coverNode(column)

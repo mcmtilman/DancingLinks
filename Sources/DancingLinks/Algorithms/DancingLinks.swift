@@ -20,8 +20,13 @@ public protocol Grid {
     /// Each row is input into the consumer.
     func generateRows(consume: (RowId, Int...) -> ())
     
-    /// Maximum number of constraints for the DancingLinks input.
+    /// Maximum number of mandatory constraints for the DancingLinks input.
+    /// Mandatory constraints are specified by index, starting at 0 up to *constraints*.
     var constraints: Int { get }
+    
+    /// Maximum number of optional constraints for the DancingLinks input.
+    /// Optional constraints are specified by index, starting at *constraints* up to *constraints + optionalConstraints*.
+    var optionalConstraints: Int { get }
     
 }
 

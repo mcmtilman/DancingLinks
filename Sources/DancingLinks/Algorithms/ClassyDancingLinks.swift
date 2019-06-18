@@ -327,7 +327,7 @@ class ClassyDancingLinks: DancingLinks {
         guard grid.constraints > 0 else { return }
         let header = Node<R>.Header(columns: (0 ..< grid.constraints).map { _ in Node.Column() })
         let state = SearchState()
-        var rows = [R]()
+        var solvedRows = [R]()
         
         // For each row in the grid, adds a node with given row id for each column in the row.
         func addRowNodes() {
@@ -358,18 +358,19 @@ class ClassyDancingLinks: DancingLinks {
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
         func solve() {
-            guard header.right !== header else { return handler(Solution(rows: rows), state) }
+            guard header.right !== header else { return handler(Solution(rows: solvedRows), state) }
+            
             let column = selectColumn()
             
             column.cover()
             for vNode in column.downNodes {
-                rows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
+                solvedRows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
                 for node in vNode.rightNodes {
                     node.cover()
                 }
                 solve()
                 guard !state.terminated else { return }
-                rows.removeLast()
+                solvedRows.removeLast()
                 for node in vNode.leftNodes {
                     node.uncover()
                 }

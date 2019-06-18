@@ -38,6 +38,10 @@ The sudoku example supports creating sudokus with other dimensions than the regu
 
 A valid sudoku puzzle can be solved with either of the two Swift algorithms, the fastest algorithm being the default.
 
+## N-Queens problem
+
+This example illustrates support for optional constraints.
+
 # Requirements
 
 Swift 5.1

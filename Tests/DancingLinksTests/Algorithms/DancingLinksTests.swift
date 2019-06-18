@@ -16,6 +16,8 @@ fileprivate struct MockGrid: Grid {
 
     let constraints = 5
     
+    let optionalConstraints = 0
+    
     func generateRows(consume: (Int, Int...) -> ()) {
         guard rows == 5 else { return }
         

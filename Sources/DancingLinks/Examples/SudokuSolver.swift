@@ -27,11 +27,16 @@ extension Sudoku: Grid {
 
     // MARK: Computed properties
 
-    /// Maximum number of constraints needed.
+    /// Maximum number of mandatory constraints for the DancingLinks input.
     var constraints: Int {
         cells * 4
     }
 
+    /// Maximum number of optional constraints for the DancingLinks input.
+    var optionalConstraints: Int {
+        0
+    }
+    
     // MARK: Generating
 
     /// Generates the rows and passes them to the consumer.
