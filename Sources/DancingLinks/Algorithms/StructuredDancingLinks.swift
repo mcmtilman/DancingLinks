@@ -179,18 +179,18 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // Updates the column sizes.
     mutating func coverNode(_ node: NodeId) {
         let columnNode = column(of: node)
-        var vNode = nodes[columnNode].down
+        var vNode = down(columnNode)
         
         unlinkFromRow(node: columnNode)
         while vNode != columnNode {
-            var hNode = nodes[vNode].right
+            var hNode = right(vNode)
             
             while hNode != vNode {
                 unlinkFromColumn(node: hNode)
-                nodes[nodes[hNode].column].size -= 1
-                hNode = nodes[hNode].right
+                nodes[column(of: hNode)].size -= 1
+                hNode = right(hNode)
             }
-            vNode = nodes[vNode].down
+            vNode = down(vNode)
         }
     }
     
@@ -200,17 +200,17 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // Updates the column sizes.
     mutating func uncoverNode(_ node: NodeId) {
         let columnNode = column(of: node)
-        var vNode = nodes[columnNode].up
+        var vNode = up(columnNode)
         
         while vNode != columnNode {
-            var hNode = nodes[vNode].left
+            var hNode = left(vNode)
             
             while hNode != vNode {
-                nodes[nodes[hNode].column].size += 1
+                nodes[column(of: hNode)].size += 1
                 relinkInColumn(node: hNode)
-                hNode = nodes[hNode].left
+                hNode = left(hNode)
             }
-            vNode = nodes[vNode].up
+            vNode = up(vNode)
         }
         relinkInRow(node: columnNode)
     }
@@ -241,9 +241,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // Returns the column of given node.
     private func column(of node: NodeId) -> NodeId {
-        let nodeOrColumn = nodes[node]
-        
-        return nodeOrColumn.isColumn ? node : nodeOrColumn.column
+        nodes[node].column
     }
     
     // MARK: Private DancingLinks operations
