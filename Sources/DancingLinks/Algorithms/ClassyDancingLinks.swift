@@ -16,7 +16,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // Initializes the row node's reference and column.
         convenience init(row: RowId, column: Column) {
-            self.init(mandatory: false)
+            self.init()
             self.row = row
             self.column = column
         }
@@ -29,15 +29,27 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // MARK: Stored properties
         
+        // Flag denoting if the colum node is mandatory.
+        // False for header nodes.
+        let mandatory: Bool
+        
+        // Number of row nodes in a column. Zero for header nodes.
+        // Varies dynamically during the covering / uncovering process.
+        // At all times <= nodes.count.
+        private (set) var size = 0
+        
+        // MARK: Private stored properties
+
         // References to the row nodes of this column, separate from the links.
         // Used for release process.
         private var nodes = [Row]()
         
         // MARK: Initializing
         
-        // Initializes the column to this node and sets the mandatory flag.
-        override init(mandatory: Bool) {
-            super.init(mandatory: mandatory)
+        // Sets the mandatory flag and initializes the column to this node.
+        init(mandatory: Bool) {
+            self.mandatory = mandatory
+            super.init()
             column = self
         }
         
@@ -107,7 +119,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // Is its own column node.
     class Header: Column {
         
-        // MARK: Stored properties
+        // MARK: Private stored properties
         
         // References to the column nodes for this header, separate from the links.
         // Used for release process.
@@ -148,35 +160,23 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // MARK: Stored properties
     
-    // Flag denoting if a colum node is mandatory.
-    // False for header and row nodes.
-    let mandatory: Bool
+    // Column node.
+    // Points to the node itself in case of headers and columns.
+    // Not nil after initialization in subclasses until explicit release.
+    private (set) var column: Column!
     
     // Client row reference. Same for all nodes in the same row.
-    // Unused (nil) for headers and columns.
+    // Nil for headers and columns.
     private (set) var row: RowId?
-    
-    // Number of row nodes in a column. Zero for headers and row nodes.
-    // Varies dynamically during the covering / uncovering process.
-    // At all times <= nodes.count.
-    private (set) var size = 0
-    
-    // MARK: Private stored properties
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
     var down, left, right, up: Node!
     
-    // Column node.
-    // Points to the node itself in case of headers and columns.
-    // Not nil after initialization in subclasses until explicit release.
-    var column: Column!
-    
     // MARK: Private initializing
     
     // Initializes the linked node properties to this node.
-    private init(mandatory: Bool) {
-        self.mandatory = mandatory
+    private init() {
         (left, down, right, up) = (self, self, self, self)
     }
     
@@ -346,21 +346,25 @@ class ClassyDancingLinks: DancingLinks {
         }
         
         // Returns the first mandatory column, or nil if none found.
-        // Note. Mandatory columns precede optional columns in the list of column nodes.
+        // Since mandatory columns precede optional columns in the list, and since the header is not mandatory,
+        // a check on the mandatory flag suffices.
         func firstColumn() -> Node<R>? {
-            guard let column = header.right, column !== header, column.mandatory else { return nil }
+            guard let column = header.right, column.column.mandatory else { return nil }
             
             return column
         }
         
         // Returns the first mandatory column with the least rows, or nil if none found.
-        // Note. Mandatory columns precede optional columns in the list of column nodes.
+        // Since mandatory columns precede optional columns in the list and the header is not mandatory,
+        // we continue iterating as long as the column is mandatory.
+        // Note. We could cast the nodes to Column and skip the hop through the column, but this is faster for
+        // the reference benchmark.
         func smallestColumn() -> Node<R>? {
-            guard var column = header.right, column !== header, column.mandatory else { return nil }
+            guard var column = header.right, column.column.mandatory else { return nil }
             var node: Node<R> = column.right
             
-            while node.mandatory {
-                if node.size < column.size { column = node }
+            while node.column.mandatory {
+                if node.column.size < column.column.size { column = node }
                 node = node.right
             }
             
@@ -402,4 +406,3 @@ class ClassyDancingLinks: DancingLinks {
     }
     
 }
-
