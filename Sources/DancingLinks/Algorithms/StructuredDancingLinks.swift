@@ -171,7 +171,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // MARK: DancingLinks operations
     
     // Covers (removes node from the grid) the node by
-    // * unlinking it from its row,
+    // * unlinking it's column from its row,
     // * unlinking any node that uses the column's constraint from that node's column.
     // Updates the column sizes.
     mutating func coverNode(_ node: NodeId) {
@@ -193,7 +193,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // Uncovers (re-inserts node in the grid) the node by
     // * re-linking any node that uses this column's constraint in that node's column,
-    // * re-linking it in its row.
+    // * re-linking it's column in its row.
     // Updates the column sizes.
     mutating func uncoverNode(_ node: NodeId) {
         let columnNode = column(of: node)

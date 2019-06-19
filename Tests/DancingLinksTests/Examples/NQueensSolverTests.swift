@@ -14,8 +14,17 @@ import XCTest
  */
 class NQueensSolverTests: XCTestCase {
 
-    // Test solving the N-Queens probleem for a regular chessboard using StructuredDancingLinks.
-    func testSolveEightQueens() {
+    // Test solving the N-Queens probleem for a regular chessboard using ClassyDancingLinks.
+    func testSolveClassyEightQueens() {
+        let eightQueens = NQueens(number: 8)
+        
+        guard let rows = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks()) else { return XCTFail("Nil solution") }
+        
+        XCTAssertEqual(rows, [0, 12, 23, 29, 49, 34, 46, 59])
+    }
+    
+   // Test solving the N-Queens probleem for a regular chessboard using StructuredDancingLinks.
+    func testSolveStructuredEightQueens() {
         let eightQueens = NQueens(number: 8)
         
         guard let rows = NQueensSolver().solve(nQueens: eightQueens) else { return XCTFail("Nil solution") }
@@ -32,7 +41,8 @@ class NQueensSolverTests: XCTestCase {
 extension NQueensSolverTests {
     
     static var allTests = [
-        ("testSolveEightQueens", testSolveEightQueens),
+        ("testSolveClassyEightQueens", testSolveClassyEightQueens),
+        ("testSolveStructuredEightQueens", testSolveStructuredEightQueens),
     ]
     
 }

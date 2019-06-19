@@ -14,9 +14,9 @@ fileprivate class Node<RowId> where RowId: Hashable {
         
         // MARK: Initializing
         
-       // Initializes the row node's reference and column.
+        // Initializes the row node's reference and column.
         convenience init(row: RowId, column: Column) {
-            self.init()
+            self.init(mandatory: false)
             self.row = row
             self.column = column
         }
@@ -33,16 +33,11 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Used for release process.
         private var nodes = [Row]()
         
-        // Number of row nodes in this column.
-        // Varies dynamically during the covering / uncovering process.
-        // At all times <= nodes.count.
-        private (set) var size = 0
-        
         // MARK: Initializing
         
-        // Initializes the column to this node.
-        override init() {
-            super.init()
+        // Initializes the column to this node and sets the mandatory flag.
+        override init(mandatory: Bool) {
+            super.init(mandatory: mandatory)
             column = self
         }
         
@@ -124,7 +119,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // Constructs a row consting of the header node and the column nodes.
         init(columns: [Column]) {
             self.columns = columns
-            super.init()
+            super.init(mandatory: false)
             for column in columns {
                 _ = left.insertRightNode(column)
             }
@@ -153,9 +148,18 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // MARK: Stored properties
     
+    // Flag denoting if a colum node is mandatory.
+    // False for header and row nodes.
+    let mandatory: Bool
+    
     // Client row reference. Same for all nodes in the same row.
     // Unused (nil) for headers and columns.
     private (set) var row: RowId?
+    
+    // Number of row nodes in a column. Zero for headers and row nodes.
+    // Varies dynamically during the covering / uncovering process.
+    // At all times <= nodes.count.
+    private (set) var size = 0
     
     // MARK: Private stored properties
     
@@ -171,7 +175,8 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // MARK: Private initializing
     
     // Initializes the linked node properties to this node.
-    private init() {
+    private init(mandatory: Bool) {
+        self.mandatory = mandatory
         (left, down, right, up) = (self, self, self, self)
     }
     
@@ -272,7 +277,7 @@ extension Node {
             self.start = start
             self.node = start
         }
-
+        
         // MARK: Iterating
         
         // Returns the next node or nil as soon as we return to the start node.
@@ -289,27 +294,27 @@ extension Node {
     }
     
     // MARK: Default iterators
-
+    
     // Iterates through the nodes in a column, starting at the node immediately below the start node.
     var downNodes: Iterator {
         Iterator(self, .down)
     }
-
+    
     // Iterates through the nodes in a row, starting at the node immediately to the left of the start node.
     var leftNodes: Iterator {
         Iterator(self, .left)
     }
-
+    
     // Iterates through the nodes in a row, starting at the node immediately to the right of the start node.
     var rightNodes: Iterator {
         Iterator(self, .right)
     }
-
+    
     // Iterates through the nodes in a column, starting at the node immediately above the start node.
     var upNodes: Iterator {
         Iterator(self, .up)
     }
-
+    
 }
 
 
@@ -317,7 +322,7 @@ extension Node {
  Implementation of the DancingLinks algorithm using classes for nodes.
  */
 class ClassyDancingLinks: DancingLinks {
-
+    
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
@@ -325,7 +330,9 @@ class ClassyDancingLinks: DancingLinks {
     /// The search strategy may affect the performance and the order in which solutions are generated.
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
-        let header = Node<R>.Header(columns: (0 ..< grid.constraints).map { _ in Node.Column() })
+        
+        let allConstraints = grid.constraints + grid.optionalConstraints
+        let header = Node<R>.Header(columns: (0 ..< allConstraints).map { i in Node.Column(mandatory: i < grid.constraints) })
         let state = SearchState()
         var solvedRows = [R]()
         
@@ -333,24 +340,41 @@ class ClassyDancingLinks: DancingLinks {
         func addRowNodes() {
             grid.generateRows { (row: R, columns: Int...) in
                 guard let column = columns.first else { return }
-
+                
                 _ = columns.dropFirst().reduce(header[column].appendNode(row: row)) { node, column in node.insertRightNode(header[column].appendNode(row: row)) }
             }
         }
-
-        // Returns a column node according to the chosen strategy.
-        // The header has at least one linked column.
+        
+        // Returns the first mandatory column, or nil if none found.
+        // Note. Mandatory columns precede optional columns in the list of column nodes.
+        func firstColumn() -> Node<R>? {
+            guard let column = header.right, column !== header, column.mandatory else { return nil }
+            
+            return column
+        }
+        
+        // Returns the first mandatory column with the least rows, or nil if none found.
+        // Note. Mandatory columns precede optional columns in the list of column nodes.
+        func smallestColumn() -> Node<R>? {
+            guard var column = header.right, column !== header, column.mandatory else { return nil }
+            var node: Node<R> = column.right
+            
+            while node.mandatory {
+                if node.size < column.size { column = node }
+                node = node.right
+            }
+            
+            return column
+        }
+        
+        // Returns a mandatory column node according to the chosen strategy, or nil if none found.
         // Note. The return type could be Column. We avoid the cast and use delegation to the column node
         // itself for the size and for the cover and uncover operations (cf. solve method).
-        func selectColumn() -> Node<R> {
-            guard strategy == .minimumSize else { return header.right }
-            var column: Node<R> = header.right
-            
-            for node in header.rightNodes where node.column.size < column.column.size {
-                column = node
+        func selectColumn() -> Node<R>? {
+            switch strategy {
+            case .naive: return firstColumn()
+            case .minimumSize: return smallestColumn()
             }
-
-            return column
         }
         
         // Recursively search for a solution until we have exhausted all options.
@@ -358,29 +382,24 @@ class ClassyDancingLinks: DancingLinks {
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
         func solve() {
-            guard header.right !== header else { return handler(Solution(rows: solvedRows), state) }
-            
-            let column = selectColumn()
+            guard let column = selectColumn() else { return handler(Solution(rows: solvedRows), state) }
             
             column.cover()
             for vNode in column.downNodes {
                 solvedRows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
-                for node in vNode.rightNodes {
-                    node.cover()
-                }
+                for node in vNode.rightNodes { node.cover() }
                 solve()
                 guard !state.terminated else { return }
                 solvedRows.removeLast()
-                for node in vNode.leftNodes {
-                    node.uncover()
-                }
+                for node in vNode.leftNodes { node.uncover() }
             }
             column.uncover()
         }
-
+        
         addRowNodes()
         _ = solve()
         header.release()
     }
     
 }
+
