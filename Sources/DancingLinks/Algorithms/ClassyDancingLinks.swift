@@ -199,7 +199,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         column.cover()
     }
     
-    // Uncovers the node;s column node.
+    // Uncovers the node's column node.
     func uncoverColumn() {
         column.uncover()
     }
