@@ -88,7 +88,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // * unlinking it from its row,
         // * unlinking any node that uses this column's constraint from that node's column.
         // Updates the column sizes.
-        override func cover() {
+        func cover() {
             unlinkFromRow()
             for vNode in downNodes {
                 for hNode in vNode.rightNodes {
@@ -102,7 +102,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
         // * re-linking any node that uses this column's constraint in that node's column,
         // * re-linking this node in its row.
         // Updates the column sizes.
-        override func uncover() {
+        func uncover() {
             for vNode in upNodes {
                 for hNode in vNode.leftNodes {
                     hNode.relinkInColumn()
@@ -195,14 +195,12 @@ fileprivate class Node<RowId> where RowId: Hashable {
     // MARK: DancingLinks search operations delegation
     
     // Covers the node's column node.
-    // See selectColumn method for purpose of this method.
-    func cover() {
+    func coverColumn() {
         column.cover()
     }
     
     // Uncovers the node;s column node.
-    // See selectColumn method for purpose of this method.
-    func uncover() {
+    func uncoverColumn() {
         column.uncover()
     }
     
@@ -337,20 +335,20 @@ class ClassyDancingLinks: DancingLinks {
         func solve() {
             guard let column = selectColumn(header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
             
-            column.cover()
+            column.coverColumn()
             for vNode in column.downNodes {
                 solvedRows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
                 for node in vNode.rightNodes {
-                    node.cover()
+                    node.coverColumn()
                 }
                 solve()
                 guard !state.terminated else { return }
                 solvedRows.removeLast()
                 for node in vNode.leftNodes {
-                    node.uncover()
+                    node.uncoverColumn()
                 }
             }
-            column.uncover()
+            column.uncoverColumn()
         }
         
         addRowNodes(grid: grid, columns: columns)
