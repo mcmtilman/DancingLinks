@@ -148,14 +148,6 @@ fileprivate class Node<RowId> where RowId: Hashable {
             columns = []
         }
         
-        // MARK: Subscript accessing
-        
-        /// Returns the column at given position.
-        /// Fails if out of range.
-        subscript(index: Int) -> Column {
-            columns[index]
-        }
-        
     }
     
     // MARK: Stored properties
@@ -171,7 +163,7 @@ fileprivate class Node<RowId> where RowId: Hashable {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    var down, left, right, up: Node!
+    private (set) var down, left, right, up: Node!
     
     // MARK: Private initializing
     
@@ -258,7 +250,7 @@ extension Node {
     // Stops when the next node is the same as the start node.
     struct Iterator: Sequence, IteratorProtocol {
         
-        // MARK: Stored properties
+        // MARK: Private stored properties
         
         // Direction of iteration
         private let direction: Direction
@@ -322,6 +314,8 @@ extension Node {
  Implementation of the DancingLinks algorithm using classes for nodes.
  */
 class ClassyDancingLinks: DancingLinks {
+        
+    // MARK: Solving
     
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
@@ -331,19 +325,56 @@ class ClassyDancingLinks: DancingLinks {
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
         
-        let allConstraints = grid.constraints + grid.optionalConstraints
-        let header = Node<R>.Header(columns: (0 ..< allConstraints).map { i in Node.Column(mandatory: i < grid.constraints) })
+        let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<R>.Column(mandatory: c < grid.constraints) }
+        let header = Node<R>.Header(columns: columns)
         let state = SearchState()
         var solvedRows = [R]()
         
-        // For each row in the grid, adds a node with given row id for each column in the row.
-        func addRowNodes() {
-            grid.generateRows { (row: R, columns: Int...) in
-                guard let column = columns.first else { return }
-                
-                _ = columns.dropFirst().reduce(header[column].appendNode(row: row)) { node, column in node.insertRightNode(header[column].appendNode(row: row)) }
+        // Recursively search for a solution until we have exhausted all options.
+        // When all columns have been covered, pass the solution to the handler.
+        // Undo covering operations when backtracking.
+        // Stop searching when the handler sets the search state to terminated.
+        func solve() {
+            guard let column = selectColumn(header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
+            
+            column.cover()
+            for vNode in column.downNodes {
+                solvedRows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
+                for node in vNode.rightNodes {
+                    node.cover()
+                }
+                solve()
+                guard !state.terminated else { return }
+                solvedRows.removeLast()
+                for node in vNode.leftNodes {
+                    node.uncover()
+                }
             }
+            column.uncover()
         }
+        
+        addRowNodes(grid: grid, columns: columns)
+        solve()
+        header.release()
+    }
+    
+    // MARK: Private constructing grid
+    
+    // For each row in the grid, adds a node with given row id for each column in the row.
+    private func addRowNodes<G, R>(grid: G, columns: [Node<R>.Column]) where G: Grid, R == G.RowId {
+        grid.generateRows { (row: R, constraints: Int...) in
+            guard let constraint = constraints.first else { return }
+            
+            _ = constraints.dropFirst().reduce(columns[constraint].appendNode(row: row)) { node, constraint in node.insertRightNode(columns[constraint].appendNode(row: row)) }
+        }
+    }
+    
+    // MARK: Private searching
+    
+    // Returns a mandatory column node according to the chosen strategy, or nil if none found.
+    // Note. The return type could be Column. We avoid the cast and use delegation to the column node
+    // itself for the size and for the cover and uncover operations (cf. solve method).
+    private func selectColumn<R>(header: Node<R>.Header, strategy: SearchStrategy) -> Node<R>? {
         
         // Returns the first mandatory column, or nil if none found.
         // Since mandatory columns precede optional columns in the list, and since the header is not mandatory,
@@ -371,38 +402,11 @@ class ClassyDancingLinks: DancingLinks {
             return column
         }
         
-        // Returns a mandatory column node according to the chosen strategy, or nil if none found.
-        // Note. The return type could be Column. We avoid the cast and use delegation to the column node
-        // itself for the size and for the cover and uncover operations (cf. solve method).
-        func selectColumn() -> Node<R>? {
-            switch strategy {
-            case .naive: return firstColumn()
-            case .minimumSize: return smallestColumn()
-            }
+        switch strategy {
+        case .naive: return firstColumn()
+        case .minimumSize: return smallestColumn()
         }
         
-        // Recursively search for a solution until we have exhausted all options.
-        // When all columns have been covered, pass the solution to the handler.
-        // Undo covering operations when backtracking.
-        // Stop searching when the handler sets the search state to terminated.
-        func solve() {
-            guard let column = selectColumn() else { return handler(Solution(rows: solvedRows), state) }
-            
-            column.cover()
-            for vNode in column.downNodes {
-                solvedRows.append(vNode.row!) // vNode is a row node with a non-nil row reference.
-                for node in vNode.rightNodes { node.cover() }
-                solve()
-                guard !state.terminated else { return }
-                solvedRows.removeLast()
-                for node in vNode.leftNodes { node.uncover() }
-            }
-            column.uncover()
-        }
-        
-        addRowNodes()
-        _ = solve()
-        header.release()
     }
     
 }
