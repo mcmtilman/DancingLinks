@@ -27,7 +27,7 @@ class NQueensSolverTests: XCTestCase {
     func testSolveStructuredEightQueens() {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
-        let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
+        let solutions = NQueensSolver().solve(nQueens: eightQueens, limit: 1)
 
         XCTAssertEqual(solutions.first, expected)
     }
