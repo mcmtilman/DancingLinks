@@ -19,9 +19,7 @@ class NQueensSolverTests: XCTestCase {
         let eightQueens = NQueens(number: 8)
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
-
-        guard solutions.count == 1 else { return XCTFail("No solution") }
-
+        
         XCTAssertEqual(solutions.first, expected)
     }
     
@@ -30,8 +28,6 @@ class NQueensSolverTests: XCTestCase {
         let eightQueens = NQueens(number: 8)
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
-
-        guard solutions.count == 1 else { return XCTFail("No solution") }
 
         XCTAssertEqual(solutions.first, expected)
     }
