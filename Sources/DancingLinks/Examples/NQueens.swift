@@ -20,6 +20,20 @@ struct NQueens {
 
 
 /**
+ A chess square.
+ */
+struct Square: Hashable {
+    
+    /// Rank of the square.
+    let rank: Int
+    
+    /// File of the square.
+    let file: Int
+    
+}
+
+
+/**
  Grid protocol adoption.
  */
 extension NQueens: Grid {
@@ -42,10 +56,10 @@ extension NQueens: Grid {
     
     /// Generates the rows and passes them to the consumer.
     /// Each row has 4 constraints: rank, file, diagonal and reverse diagonal.
-    func generateRows(consume: (Int, Int...) -> ()) {
+    func generateRows(consume: (Square, Int...) -> ()) {
         for rank in 0 ..< number {
             for file in 0 ..< number {
-                let rowId = rank * number + file
+                let rowId = Square(rank: rank, file: file)
                 let rankConstraint = rank
                 let fileConstraint = number + file
                 let diagonalConstraint = 2 * number + rank + file
@@ -71,13 +85,10 @@ class NQueensSolver {
     
     // MARK: Solving N-Queens problem
     
-    /// Returns a solution of the N-Queens problem, or nil if no solution found.
-    /// Does not verify the existence of additional solutions.
+    /// Returns solutions of the N-Queens problem, optionally up to a limit.
     /// Default algorithm = StructuredDancingLinks.
-    func solve(nQueens: NQueens, algorithm: DancingLinks = dlx) -> [Int]? {
-        guard let solution = algorithm.solve(grid: nQueens) else { return nil }
-        
-        return solution.rows
+    func solve(nQueens: NQueens, algorithm: DancingLinks = dlx, limit: Int? = nil) -> [[Square]] {
+        algorithm.solve(grid: nQueens, limit: limit).map { $0.rows }
     }
     
 }
