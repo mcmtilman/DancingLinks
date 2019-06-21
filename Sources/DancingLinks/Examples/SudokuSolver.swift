@@ -44,7 +44,7 @@ extension Sudoku: Grid {
     /// Generates one row for non-empty cells.
     func generateRows(consume: (Cell, Int...) -> ()) {
         let rows = dimensions.rows, columns = dimensions.columns
-        let givens = collectGivens(rows, columns, size)
+        let givens = collectValues(rows, columns, size)
 
         for row in 0 ..< size {
             for column in 0 ..< size {
@@ -65,23 +65,23 @@ extension Sudoku: Grid {
         }
     }
 
-    // Returns the givens for each row, column and box as a bit set.
-    private func collectGivens(_ rows: Int, _ columns: Int, _ size: Int) -> (rows: [BitSet], columns: [BitSet], boxes: [BitSet]) {
-        var rowGivens = [BitSet](repeating: BitSet(), count: size)
-        var columnGivens = [BitSet](repeating: BitSet(), count: size)
-        var boxGivens = [BitSet](repeating: BitSet(), count: size)
+    // Returns the given values for each row, column and box as a bit set.
+    private func collectValues(_ rows: Int, _ columns: Int, _ size: Int) -> (rows: [BitSet], columns: [BitSet], boxes: [BitSet]) {
+        var rowValues = [BitSet](repeating: BitSet(), count: size)
+        var columnValues = [BitSet](repeating: BitSet(), count: size)
+        var boxValues = [BitSet](repeating: BitSet(), count: size)
 
         for row in 0 ..< size {
             for column in 0 ..< size {
                 if let value = values[row * size + column] {
-                    rowGivens[row].insert(value)
-                    columnGivens[column].insert(value)
-                    boxGivens[row / rows * rows + column / columns].insert(value)
+                    rowValues[row].insert(value)
+                    columnValues[column].insert(value)
+                    boxValues[row / rows * rows + column / columns].insert(value)
                 }
             }
         }
         
-        return (rows: rowGivens, columns: columnGivens, boxes: boxGivens)
+        return (rows: rowValues, columns: columnValues, boxes: boxValues)
     }
     
 }

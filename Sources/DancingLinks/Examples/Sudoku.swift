@@ -147,28 +147,21 @@ struct Sudoku {
         let size = dimensions.cells, rows = dimensions.rows, columns = dimensions.columns
         guard values.count == size * size else { return nil }
         
-        for i in 0 ..< size {
-            var rowValues = BitSet()
-
-            for j in 0 ..< size {
-                if let value = values[i * size + j] {
-                    guard value >= 1, value <= size, rowValues.insert(value).inserted else { return nil }
+        var rowValues = [BitSet](repeating: BitSet(), count: size)
+        var columnValues = [BitSet](repeating: BitSet(), count: size)
+        var boxValues = [BitSet](repeating: BitSet(), count: size)
+        
+        for row in 0 ..< size {
+            for column in 0 ..< size {
+                if let value = values[row * size + column] {
+                    guard value >= 1, value <= size else { return nil }
+                    guard rowValues[row].insert(value).inserted else { return nil }
+                    guard columnValues[column].insert(value).inserted else { return nil }
+                    guard boxValues[row / rows * rows + column / columns].insert(value).inserted else { return nil }
                 }
             }
         }
-        for i in 0 ..< size {
-            var columnValues = BitSet(), boxValues = BitSet()
-
-            for j in 0 ..< size {
-                if let value = values[i + j * size] {
-                    guard columnValues.insert(value).inserted else { return nil }
-                }
-                if let value = values[(i / rows * rows + j / columns) * size + i % rows * columns + j % columns] {
-                    guard boxValues.insert(value).inserted else { return nil }
-                }
-            }
-        }
-
+        
         self.dimensions = dimensions
         self.values = values
     }
