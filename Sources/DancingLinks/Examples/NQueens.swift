@@ -7,7 +7,7 @@
 //
 
 /**
- Specifies number of queens (and chessboard size).
+ Specifies the number of queens and the size of the (square) chessboard.
  */
 struct NQueens {
     
@@ -15,6 +15,13 @@ struct NQueens {
     
     // Number of queens = number of ranks and files on chessboard.
     let number: Int
+    
+    /// Initializes the N-Queens problem for N >= 1. Fails otherwise.
+    init?(number: Int) {
+        guard number >= 0 else { return nil }
+        
+        self.number = number
+    }
     
 }
 
