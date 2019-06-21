@@ -14,7 +14,7 @@ import XCTest
  */
 class NQueensSolverTests: XCTestCase {
 
-    // Test solving the N-Queens probleem for a regular chessboard using ClassyDancingLinks.
+    // Test solving the N-Queens problem for a regular chessboard using ClassyDancingLinks.
     func testSolveClassyEightQueens() {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
@@ -23,7 +23,7 @@ class NQueensSolverTests: XCTestCase {
         XCTAssertEqual(solutions.first, expected)
     }
     
-   // Test solving the N-Queens probleem for a regular chessboard using StructuredDancingLinks.
+   // Test solving the N-Queens problem for a regular chessboard using StructuredDancingLinks.
     func testSolveStructuredEightQueens() {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
@@ -32,7 +32,7 @@ class NQueensSolverTests: XCTestCase {
         XCTAssertEqual(solutions.first, expected)
     }
     
-    // Test finding all solutions for the N-Queens problem for N in 1 ... 10.
+    // Test finding all solutions to the N-Queens problem for N in 1 ... 10.
     // Verify:
     // * the number of solutions (cf. Wikipedia),
     // * that each solution is unique,
