@@ -8,8 +8,9 @@
 
 /**
  DancingLinks input represented as a list of sparse grid rows.
- Each row has a unique reference and zero or more constraints.
- The DancingLinks algorithm does not attribute a specific meaning to the reference and constraints.
+ A valid row has a unique reference and one or more constraints that the row satisfies.
+ Rows without constraints are skipped.
+ The DancingLinks algorithm does not attribute a specific meaning to the row reference or to the constraints.
  */
 public protocol Grid {
     
@@ -22,6 +23,7 @@ public protocol Grid {
     
     /// Maximum number of mandatory constraints for the DancingLinks input.
     /// Mandatory constraints are specified by index, starting at 0 up to *constraints*.
+    /// There must be at least one mandatory constraint.
     var constraints: Int { get }
     
     /// Maximum number of optional constraints for the DancingLinks input.
@@ -36,8 +38,12 @@ public protocol Grid {
  */
 public struct Solution<RowId> {
     
-    /// List of unique row ids.
-    /// Size of the list = number of cells in the sudoku.
+    /// List of unique row references satisfying the constraints.
+    /// Examples:
+    /// * For a sudoku, the size of the list = the number of cells in the sudoku.
+    /// Each row reference identifies a cell and the correct value for that cell.
+    /// * For the 8-Queens problem, the list has size 8. Each row reference
+    /// identifies a square on the chessboard for a queen.
     let rows: [RowId]
     
 }
@@ -47,8 +53,9 @@ public struct Solution<RowId> {
  Search strategies.
  At each step in the search process, the DancingLinks algorithm selects a constraint column.
  The search strategy determines how this column is selected.
- * Naive: selects the first available column in the remaining list of columns.
- * Minimum size: selects the first column with minimum size.
+ * Naive: selects the first available (i.e. uncovered) mandatory column.
+ * Minimum size: selects the first available mandatory column with minimum size.
+ If no column is available, the options are exhausted and the algorithm backtracks if possible.
  */
 public enum SearchStrategy {
     case naive

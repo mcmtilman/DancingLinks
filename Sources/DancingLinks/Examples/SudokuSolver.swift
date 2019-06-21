@@ -44,13 +44,15 @@ extension Sudoku: Grid {
     /// Generates one row for non-empty cells.
     func generateRows(consume: (Cell, Int...) -> ()) {
         let rows = dimensions.rows, columns = dimensions.columns
-        let options = remainingOptions(rows, columns, size)
+        let givens = collectGivens(rows, columns, size)
 
         for row in 0 ..< size {
             for column in 0 ..< size {
                 let index = row * size + column
+                let givens = givens.rows[row].union(givens.columns[column].union(givens.boxes[row / rows * rows + column / columns]))
+                let options = values[index].map { BitSet($0) } ?? BitSet(1 ... size).subtracting(givens)
 
-                for value in options[index] {
+                for value in options {
                     let rowId = Cell(index: index, value: value)
                     let cellConstraint = index
                     let rowConstraint = cells + row * size + value - 1
@@ -63,68 +65,25 @@ extension Sudoku: Grid {
         }
     }
 
-    // Returns the options for each cell as a bit set.
-    // For an empty cell eliminates givens in the cells's houses and returns the remaining options.
-    // For a non-empty cell returns a singleton set containing the given.
-    private func remainingOptions(_ rows: Int, _ columns: Int, _ size: Int) -> [BitSet] {
-        let set = BitSet(1 ... size)
-        var options = values.map { $0.map { BitSet($0) } ?? set }
-        var i = 0
+    // Returns the givens for each row, column and box as a bit set.
+    private func collectGivens(_ rows: Int, _ columns: Int, _ size: Int) -> (rows: [BitSet], columns: [BitSet], boxes: [BitSet]) {
+        var rowGivens = [BitSet](repeating: BitSet(), count: size)
+        var columnGivens = [BitSet](repeating: BitSet(), count: size)
+        var boxGivens = [BitSet](repeating: BitSet(), count: size)
 
-        for _ in 0 ..< size {
-            var givens = BitSet()
-
-            for _ in 0 ..< size {
-                if let v = values[i] { givens.insert(v) }
-                i += 1
-            }
-            i -= size
-            for _ in 0 ..< size {
-                if values[i] == nil { options[i].subtract(givens) }
-                i += 1
+        for row in 0 ..< size {
+            for column in 0 ..< size {
+                if let value = values[row * size + column] {
+                    rowGivens[row].insert(value)
+                    columnGivens[column].insert(value)
+                    boxGivens[row / rows * rows + column / columns].insert(value)
+                }
             }
         }
         
-        for c in 0 ..< size {
-            var givens = BitSet()
-
-            i = c
-            for _ in 0 ..< size {
-                if let v = values[i] { givens.insert(v) }
-                i += size
-            }
-            i = c
-            for _ in 0 ..< size {
-                if values[i] == nil { options[i].subtract(givens) }
-                i += size
-            }
-        }
-        
-        for b in 0 ..< size {
-            let origin = b / rows * rows * size + b * columns % size
-            var givens = BitSet()
-            
-            i = origin
-            for _ in 0 ..< rows {
-                for _ in 0 ..< columns {
-                    if let v = values[i] { givens.insert(v) }
-                    i += 1
-                }
-                i = origin + size
-            }
-            i = origin
-            for _ in 0 ..< rows {
-                for _ in 0 ..< columns {
-                    if values[i] == nil { options[i].subtract(givens) }
-                    i += 1
-                }
-                i = origin + size
-            }
-        }
-
-        return options
+        return (rows: rowGivens, columns: columnGivens, boxes: boxGivens)
     }
-
+    
 }
 
 

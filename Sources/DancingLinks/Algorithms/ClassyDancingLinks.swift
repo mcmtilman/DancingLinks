@@ -250,8 +250,8 @@ extension Node {
         
         // MARK: Private stored properties
         
-        // Direction of iteration
-        private let direction: Direction
+        // Returns the node's next node in the iterator's direction.
+        private let nextNode: (Node) -> Node
         
         // Start node. Iteration stops when nextNode === start.
         private let start: Node
@@ -263,21 +263,22 @@ extension Node {
         
         // Initializes the iterator with a start (also end) node, and a function computing the next node.
         init(_ start: Node, _ direction: Direction) {
-            self.direction = direction
             self.start = start
             self.node = start
+            
+            switch direction {
+            case .down: nextNode = { $0.down }
+            case .left: nextNode = { $0.left }
+            case .right: nextNode = { $0.right }
+            case .up: nextNode = { $0.up }
+            }
         }
         
         // MARK: Iterating
         
-        // Returns the next node or nil as soon as we return to the start node.
+        // Returns the next node or nil when we arrive at the start node.
         mutating func next() -> Node? {
-            switch direction {
-            case .down: node = node.down
-            case .left: node = node.left
-            case .right: node = node.right
-            case .up: node = node.up
-            }
+            node = nextNode(node)
             
             return node === start ? nil : node
         }
