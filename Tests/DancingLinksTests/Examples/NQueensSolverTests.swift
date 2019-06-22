@@ -17,6 +17,7 @@ class NQueensSolverTests: XCTestCase {
     // Test solving the N-Queens problem for a regular chessboard using ClassyDancingLinks.
     func testSolveClassyEightQueens() {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
+        
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
         
@@ -26,6 +27,7 @@ class NQueensSolverTests: XCTestCase {
    // Test solving the N-Queens problem for a regular chessboard using StructuredDancingLinks.
     func testSolveStructuredEightQueens() {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
+        
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, limit: 1)
 
@@ -56,7 +58,7 @@ class NQueensSolverTests: XCTestCase {
                 XCTAssertEqual(Set(solution.map { $0.rank }).count, number)
                 XCTAssertEqual(Set(solution.map { $0.file }).count, number)
                 XCTAssertEqual(Set(solution.map { $0.rank + $0.file }).count, number)
-                XCTAssertEqual(Set(solution.map { $0.file - $0.rank }).count, number)
+                XCTAssertEqual(Set(solution.map { $0.rank - $0.file }).count, number)
             }
         }
     }

@@ -70,7 +70,7 @@ extension NQueens: Grid {
                 let rankConstraint = rank
                 let fileConstraint = number + file
                 let diagonalConstraint = 2 * number + rank + file
-                let reverseDiagonalConstraint = 5 * number - 2 - rank + file
+                let reverseDiagonalConstraint = 5 * number - 2 + rank - file
 
                 consume(rowId, rankConstraint, fileConstraint, diagonalConstraint, reverseDiagonalConstraint)
             }

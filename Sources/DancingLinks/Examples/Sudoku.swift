@@ -119,7 +119,7 @@ struct Sudoku {
     /// - Number of values must conform to given dimensions and fit in a bitset.
     /// - All givens (i.e. non-nil values) must contain a valid number in the range 1 ... size of a box.
     /// - There may be no conflict between givens in the same house (box, sudoku row or sudoku column).
-    /// This does no include verifying that the input has one (and only one) solution.
+    /// This does not include verifying that the input has one (and only one) solution.
     ///
     /// - Parameter values: List of givens and empty cells (nil values), in row-major order.
     /// - Parameter rows: The number of rows within a box. Default = 3.
@@ -154,10 +154,11 @@ struct Sudoku {
         for row in 0 ..< size {
             for column in 0 ..< size {
                 if let value = values[row * size + column] {
-                    guard value >= 1, value <= size else { return nil }
-                    guard rowValues[row].insert(value).inserted else { return nil }
-                    guard columnValues[column].insert(value).inserted else { return nil }
-                    guard boxValues[row / rows * rows + column / columns].insert(value).inserted else { return nil }
+                    guard value >= 1, value <= size,
+                        rowValues[row].insert(value).inserted,
+                        columnValues[column].insert(value).inserted,
+                        boxValues[row / rows * rows + column / columns].insert(value).inserted
+                    else { return nil }
                 }
             }
         }
