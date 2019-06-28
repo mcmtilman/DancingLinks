@@ -324,8 +324,7 @@ class ClassyDancingLinks: DancingLinks {
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
         
-        let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<R>.Column(mandatory: c < grid.constraints) }
-        let header = Node<R>.Header(columns: columns)
+        let header = makeNodes(grid: grid)
         let state = SearchState()
         var solvedRows = [R]()
         
@@ -352,7 +351,6 @@ class ClassyDancingLinks: DancingLinks {
             column.uncoverColumn()
         }
         
-        addRowNodes(grid: grid, columns: columns)
         solve()
         header.release()
     }
@@ -360,12 +358,17 @@ class ClassyDancingLinks: DancingLinks {
     // MARK: Private constructing grid
     
     // For each row in the grid, adds a node with given row id for each column in the row.
-    private func addRowNodes<G, R>(grid: G, columns: [Node<R>.Column]) where G: Grid, R == G.RowId {
+    private func makeNodes<G, R>(grid: G) -> Node<R>.Header where G: Grid, R == G.RowId {
+        let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<R>.Column(mandatory: c < grid.constraints) }
+        let header = Node<R>.Header(columns: columns)
+
         grid.generateRows { (row: R, constraints: Int...) in
             guard let constraint = constraints.first else { return }
             
             _ = constraints.dropFirst().reduce(columns[constraint].appendNode(row: row)) { node, constraint in node.insertRightNode(columns[constraint].appendNode(row: row)) }
         }
+        
+        return header
     }
     
     // MARK: Private searching

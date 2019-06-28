@@ -241,7 +241,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
             if node.size < column.size { column = node }
             node = nodes[node.right]
         }
-
+        
         return column.id
     }
     
@@ -313,6 +313,60 @@ fileprivate struct Store<RowId> where RowId: Hashable {
  */
 public class StructuredDancingLinks: DancingLinks {
     
+    // For each row in the grid, adds a node with given row id for each column in the row.
+    private func makeNodes<G, R>(grid: G, store: inout Store<R>) -> Store<R>.NodeId where G: Grid, R == G.RowId {
+        let columnNodes = (0 ..< grid.constraints + grid.optionalConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
+        let header = store.makeHeaderNode(columnNodes: columnNodes)
+        
+        grid.generateRows { (row: R, columns: Int...) in
+            guard let c = columns.first else { return }
+            
+            _ = columns.dropFirst().reduce(store.appendNode(row: row, column: columnNodes[c])) { n, c in store.insertNode(store.appendNode(row: row, column: columnNodes[c]), after: n) }
+        }
+        
+        return header
+    }
+    
+    // Returns a mandatory column node according to the chosen strategy, or nil if none found.
+    private func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
+        switch strategy {
+        case .naive: return store.firstColumn(header: header)
+        case .minimumSize: return store.smallestColumn(header: header)
+        }
+    }
+    
+    // Injects each solution and the search state in the handler.
+    // The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
+    // The handler can set the search state to terminated.
+    // The search strategy may affect the performance and the order in which solutions are generated.
+    private func solve<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy, state: SearchState, solvedRows: inout [R], handler: (Solution<R>, SearchState) -> ()) {
+        guard let column = selectColumn(store: &store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
+        var vNode = store.down(column)
+        
+        store.coverNode(column)
+        while vNode != column {
+            var hNode = store.right(vNode)
+            
+            solvedRows.append(store.row(of: vNode)!)
+            while hNode != vNode {
+                store.coverNode(hNode)
+                hNode = store.right(hNode)
+            }
+            
+            solve(store: &store, header: header, strategy: strategy, state: state, solvedRows: &solvedRows, handler: handler)
+            guard !state.terminated else { return }
+            
+            solvedRows.removeLast()
+            hNode = store.left(vNode)
+            while hNode != vNode {
+                store.uncoverNode(hNode)
+                hNode = store.left(hNode)
+            }
+            vNode = store.down(vNode)
+        }
+        store.uncoverNode(column)
+    }
+    
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
@@ -321,36 +375,13 @@ public class StructuredDancingLinks: DancingLinks {
     public func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
         guard grid.constraints > 0 else { return }
         
-        let allConstraints = grid.constraints + grid.optionalConstraints
-        var store = Store<R>(size: 2 * allConstraints + 1)
-        let columnNodes = (0 ..< allConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
-        let header = store.makeHeaderNode(columnNodes: columnNodes)
+        var store = Store<R>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
+        let header = makeNodes(grid: grid, store: &store)
         let state = SearchState()
         var solvedRows = [R]()
         
-        // For each row in the grid, adds a node with given row id for each column in the row.
-        func addRowNodes() {
-            grid.generateRows { (row: R, columns: Int...) in
-                guard let c = columns.first else { return }
-                
-                _ = columns.dropFirst().reduce(store.appendNode(row: row, column: columnNodes[c])) { n, c in store.insertNode(store.appendNode(row: row, column: columnNodes[c]), after: n) }
-            }
-        }
-        
-        // Returns a mandatory column node according to the chosen strategy, or nil if none found.
-        func selectColumn() -> Store<R>.NodeId? {
-            switch strategy {
-            case .naive: return store.firstColumn(header: header)
-            case .minimumSize: return store.smallestColumn(header: header)
-            }
-        }
-        
-        // Recursively search for a solution until we have exhausted all options.
-        // When all columns have been covered, pass the solution to the handler.
-        // Undo covering operations when backtracking.
-        // Stop searching when the handler sets the search state to terminated.
-        func solve() {
-            guard let column = selectColumn() else { return handler(Solution(rows: solvedRows), state) }
+       func solve() -> () {
+            guard let column = selectColumn(store: &store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
             var vNode = store.down(column)
             
             store.coverNode(column)
@@ -376,9 +407,8 @@ public class StructuredDancingLinks: DancingLinks {
             }
             store.uncoverNode(column)
         }
-        
-        addRowNodes()
+
         solve()
-    }
+     }
     
 }

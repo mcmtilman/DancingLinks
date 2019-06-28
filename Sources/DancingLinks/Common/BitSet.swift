@@ -256,3 +256,87 @@ extension BitSet: Sequence {
     }
     
 }
+
+
+/**
+ Collection protocol adoption.
+ */
+extension BitSet: Collection {
+    
+    // MARK: Indices
+    
+    // Position of a bit in the set.
+    // Keeps track of value of originating set.
+    public struct Index: Comparable {
+        
+        // MARK: Stored properties
+        
+        // Position of a bit in the set.
+        fileprivate let position: Int
+        
+        // Value of the set that created the index.
+        fileprivate let value: Int
+        
+        // MARK: Comparing
+        
+        /// Returns true if the first index position is less than the position of the second index.
+        public static func < (lhs: Index, rhs: Index) -> Bool {
+            return lhs.position < rhs.position
+        }
+        
+        /// Returns true if both indices reference the same position.
+        public static func == (lhs: Index, rhs: Index) -> Bool {
+            return lhs.position == rhs.position
+        }
+        
+        // MARK: Initializing
+        
+        // Initializes position and value of the index.
+        fileprivate init(_ position: Int, _ value: Int) {
+            self.position = position
+            self.value = value
+        }
+        
+    }
+    
+    // MARK: Computed properties
+    
+    /// The set's position one greater than the last valid subscript argument.
+    /// Start index when the set is empty.
+    public var endIndex: Index {
+        Index(value == 0 ? 0 : Int.bitWidth - value.leadingZeroBitCount, value)
+    }
+    
+    /// The position of the first element in a non-empty bit set.
+    /// Zero position if the set is empty.
+    public var startIndex: Index {
+        Index(value == 0 ? 0 : value.trailingZeroBitCount, value)
+    }
+    
+    // MARK: Accessing indices
+    
+    /// Returns the next index, or the end index if there is no next index.
+    /// Asserts that the index is valid.
+    public func index(after index: Index) -> Index {
+        assert(value == index.value)
+        assert(index < endIndex)
+        
+        for i in index.position + 1 ..< endIndex.position where value & (1 << i) != 0 {
+            return Index(i, value)
+        }
+        
+        return endIndex
+    }
+    
+    // MARK: Subscript accessing
+    
+    /// Returns the value at given index.
+    /// Asserts that the index is valid.
+    public subscript(index: Index) -> Int {
+        assert(value == index.value)
+        assert(index < endIndex)
+        
+        return index.position
+    }
+    
+}
