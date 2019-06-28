@@ -31,7 +31,7 @@ class SudokuGeneratorPerformanceTests: XCTestCase {
         
         measure {
             for _ in 1 ... 10 {
-                guard let sudoku = generator.generateSolution(), sudoku.isComplete() else { return XCTFail("nil solution") }
+                guard let sudoku = generator.generateSolution(), sudoku.isComplete() else { return XCTFail("nil or invalid solution") }
             }
         }
     }
