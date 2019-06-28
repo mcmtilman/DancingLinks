@@ -5,7 +5,6 @@
 //  Copyright © 2019 Dotted.Pair.
 //  Licensed under Apache License v2.0.
 //
-
 /**
  Dimensions of a sudoku box. Specifies the number of rows and columns.
  */
@@ -51,11 +50,11 @@ struct Dimensions {
     /// Fails if the dimensions are outside the Bounds ranges.
     init?(rows: Int, columns: Int) {
         guard Bounds.rows.contains(rows), Bounds.columns.contains(columns), rows * columns <= Bounds.maxCells else { return nil }
-
+        
         self.rows = rows
         self.columns = columns
     }
-
+    
 }
 
 
@@ -158,7 +157,7 @@ struct Sudoku {
                         rowValues[row].insert(value).inserted,
                         columnValues[column].insert(value).inserted,
                         boxValues[row / rows * rows + column / columns].insert(value).inserted
-                    else { return nil }
+                        else { return nil }
                 }
             }
         }
@@ -201,16 +200,16 @@ extension Sudoku {
         guard let dimensions = Dimensions(rows: rows, columns: columns) else { return nil }
         let size = dimensions.cells
         guard size >= 4, size <= 9 else { return nil }
-
+        
         let lines = string.split(separator: "\n", omittingEmptySubsequences: false)
         guard lines.count == size else { return nil }
-
+        
         let rows = lines.map { line in line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }}
         for row in rows {
             guard row.count == size else { return nil }
             for case let value? in row where value < 1 || value > size { return nil }
         }
-
+        
         self.init(values: rows.flatMap { $0 }, dimensions: dimensions)
     }
     
@@ -234,5 +233,5 @@ extension Sudoku {
     func isComplete() -> Bool {
         !values.contains(nil)
     }
-
+    
 }
