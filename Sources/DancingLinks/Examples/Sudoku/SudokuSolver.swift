@@ -109,6 +109,7 @@ class SudokuSolver {
         for row in solution.rows {
             values[row.index] = row.value
         }
+
         return Sudoku(values: values, dimensions: sudoku.dimensions)
     }
     

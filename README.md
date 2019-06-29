@@ -52,4 +52,4 @@ All benchmarks used release builds with full enforcement of exclusive access to 
 
 # Requirements
 
-The code has been tested with the Swift 5.1 Snapshot 2019-05-29 XCode toolchain.
+The code has been tested with the Swift 5.1 Snapshot 2019-06-28 XCode toolchain and XCode 11.0 beta 2.
