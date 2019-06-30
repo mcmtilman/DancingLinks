@@ -88,16 +88,20 @@ public class SearchState {
 
 
 /**
- Protocol for the DancingLinks algorithm (cf. Donald Knuth's Algorithm X).
+ Superclass for the DancingLinks implementations (cf. Donald Knuth's Algorithm X).
+ Note. This was originally a protocol, but this caused some performance problems.
  */
-public protocol DancingLinks {
+public class DancingLinks {
     
     /// Reads a grid of sparse rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
     /// The algorithm should stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler stops the search by marking the search state as terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId
+    /// Abstract method, must be overridden in subclasses.
+    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+        fatalError("Abstract method must be overridden")
+    }
     
 }
 
