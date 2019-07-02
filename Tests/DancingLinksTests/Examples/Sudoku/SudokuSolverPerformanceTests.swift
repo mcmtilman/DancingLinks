@@ -21,46 +21,38 @@ class SudokuSolverPerformanceTests: XCTestCase {
         
         measure {
             for _ in 1 ... 10 {
-                guard SudokuSolver().solve(sudoku: evil, algorithm: algorithm) != nil else { return XCTFail("nil solution") }
-            }
-        }
-    }
-    
-    // Test solving the evil sudoku using ClassyDancingLinks.
-    func testSolveAndValidateClassyEvilSudoku() {
-        let evil = Sudoku.evil
-        let algorithm = ClassyDancingLinks()
-        
-        measure {
-            for _ in 1 ... 10 {
-                guard let sudoku = SudokuSolver().solve(sudoku: evil, algorithm: algorithm), sudoku.isComplete() else { return XCTFail("nil or invalid solution") }
-            }
-        }
-    }
-    
-    // Test solving the evil sudoku using StructuredDancingLinks.
-    func testSolveStructuredEvilSudoku() {
-        let evil = Sudoku.evil
-        
-        measure {
-            for _ in 1 ... 10 {
-                guard SudokuSolver().solve(sudoku: evil) != nil else { return XCTFail("nil solution") }
+                guard let sudoku = SudokuSolver().solve(sudoku: evil, algorithm: algorithm) else { return XCTFail("Nil solution") }
+                guard sudoku.isComplete() else { return XCTFail("Incomplete solution") }
             }
         }
     }
     
     // Test solving and validating the evil sudoku using StructuredDancingLinks.
-    func testSolveAndValidateStructuredEvilSudoku() {
+    func testSolveStructuredEvilSudoku() {
         let evil = Sudoku.evil
         
         measure {
             for _ in 1 ... 10 {
-                guard let sudoku = SudokuSolver().solve(sudoku: evil), sudoku.isComplete() else { return XCTFail("nil or invalid solution") }
+                guard let sudoku = SudokuSolver().solve(sudoku: evil), sudoku.isComplete() else { return XCTFail("Nil") }
+                guard sudoku.isComplete() else { return XCTFail("Incomplete solution") }
             }
         }
     }
     
-    // Test solving the evil sudoku using StructuredDancingLinks.
+    // Test solving and validating the evil sudoku using StructuredDancingLinksNR.
+    func testSolveNonRecursiveStructuredEvilSudoku() {
+        let evil = Sudoku.evil
+        let algorithm = StructuredDancingLinksNR()
+        
+        measure {
+            for _ in 1 ... 10 {
+                guard let sudoku = SudokuSolver().solve(sudoku: evil, algorithm: algorithm) else { return XCTFail("Nil solution") }
+                guard sudoku.isComplete() else { return XCTFail("Incomplete solution") }
+            }
+        }
+    }
+    
+    // Test generating and validating a solution starting from an empty grid.
     func testGenerateSolution() {
         let string = """
             .........
@@ -74,32 +66,11 @@ class SudokuSolverPerformanceTests: XCTestCase {
             .........
             """
         guard let empty = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
-
-        measure {
-            for _ in 1 ... 10 {
-                guard SudokuSolver().solve(sudoku: empty) != nil else { return XCTFail("nil solution") }
-            }
-        }
-    }
-    
-    // Test solving and validating the evil sudoku using StructuredDancingLinks.
-    func testGenerateAndValidateSolution() {
-        let string = """
-            .........
-            .........
-            .........
-            .........
-            .........
-            .........
-            .........
-            .........
-            .........
-            """
-        guard let empty = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
         
         measure {
             for _ in 1 ... 10 {
-                guard let sudoku = SudokuSolver().solve(sudoku: empty), sudoku.isComplete() else { return XCTFail("nil or invalid solution") }
+                guard let sudoku = SudokuSolver().solve(sudoku: empty) else { return XCTFail("Nil solution") }
+                guard sudoku.isComplete() else { return XCTFail("Incomplete solution") }
             }
         }
     }
@@ -113,11 +84,9 @@ extension SudokuSolverPerformanceTests {
     
     static var allTests = [
         ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
-        ("testSolveAndValidateClassyEvilSudoku", testSolveAndValidateClassyEvilSudoku),
         ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
-        ("testSolveAndValidateStructuredEvilSudoku", testSolveAndValidateStructuredEvilSudoku),
+        ("testSolveNonRecursiveStructuredEvilSudoku", testSolveNonRecursiveStructuredEvilSudoku),
         ("testGenerateSolution", testGenerateSolution),
-        ("testGenerateAndValidateSolution", testGenerateAndValidateSolution),
     ]
     
 }

@@ -11,7 +11,7 @@
  Handles node-related operations.
  */
 fileprivate struct Store<RowId> where RowId: Hashable {
-    
+
     // References a node in the store.
     typealias NodeId = Int
 
@@ -143,6 +143,11 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // MARK: Accessing
     
+    // Returns the column of given node.
+    func column(of node: NodeId) -> NodeId {
+        nodes[node].column
+    }
+    
     // Returns the node directly below given node.
     func down(_ node: NodeId) -> NodeId {
         nodes[node].down
@@ -259,11 +264,6 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     
     // MARK: Private accessing
     
-    // Returns the column of given node.
-    private func column(of node: NodeId) -> NodeId {
-        nodes[node].column
-    }
-    
     // Update the column size with given amount.
     private mutating func updateColumnSize(of node: NodeId, with amount: Int) {
         let columnNode = column(of: node)
@@ -314,7 +314,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
 public class StructuredDancingLinks: DancingLinks {
     
     // For each row in the grid, adds a node with given row id for each column in the row.
-    private func makeNodes<G, R>(grid: G, store: inout Store<R>) -> Store<R>.NodeId where G: Grid, R == G.RowId {
+    fileprivate func makeNodes<G, R>(grid: G, store: inout Store<R>) -> Store<R>.NodeId where G: Grid, R == G.RowId {
         let columnNodes = (0 ..< grid.constraints + grid.optionalConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
         let header = store.makeHeaderNode(columnNodes: columnNodes)
         
@@ -328,45 +328,13 @@ public class StructuredDancingLinks: DancingLinks {
     }
     
     // Returns a mandatory column node according to the chosen strategy, or nil if none found.
-    private func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
+    fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
         switch strategy {
         case .naive: return store.firstColumn(header: header)
         case .minimumSize: return store.smallestColumn(header: header)
         }
     }
-    
-    // Injects each solution and the search state in the handler.
-    // The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
-    // The handler can set the search state to terminated.
-    // The search strategy may affect the performance and the order in which solutions are generated.
-    private func solve<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy, state: SearchState, solvedRows: inout [R], handler: (Solution<R>, SearchState) -> ()) {
-        guard let column = selectColumn(store: &store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
-        var vNode = store.down(column)
         
-        store.coverNode(column)
-        while vNode != column {
-            var hNode = store.right(vNode)
-            
-            solvedRows.append(store.row(of: vNode)!)
-            while hNode != vNode {
-                store.coverNode(hNode)
-                hNode = store.right(hNode)
-            }
-            
-            solve(store: &store, header: header, strategy: strategy, state: state, solvedRows: &solvedRows, handler: handler)
-            guard !state.terminated else { return }
-            
-            solvedRows.removeLast()
-            hNode = store.left(vNode)
-            while hNode != vNode {
-                store.uncoverNode(hNode)
-                hNode = store.left(hNode)
-            }
-            vNode = store.down(vNode)
-        }
-        store.uncoverNode(column)
-    }
-    
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
@@ -410,5 +378,76 @@ public class StructuredDancingLinks: DancingLinks {
 
         solve()
      }
+    
+}
+
+/**
+ Non-recursive implementation of the DancingLinks algorithm using structs for nodes.
+ Experimental (cf. article *Non-Recursive Dancing Links* by Jan Magne Tjensvold).
+ */
+public class StructuredDancingLinksNR: StructuredDancingLinks {
+    
+    /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
+    /// Grid and solution use the same type of row identification.
+    /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
+    /// The handler can set the search state to terminated.
+    /// The search strategy may affect the performance and the order in which solutions are generated.
+    public override func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+        guard grid.constraints > 0 else { return }
+        
+        var store = Store<R>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
+        let header = makeNodes(grid: grid, store: &store)
+        let state = SearchState()
+        var solvedRows = [R]()
+        var k = 0
+        var stack = [Store<R>.NodeId]()
+        var backtrack = false
+        
+        guard var column = selectColumn(store: &store, header: header, strategy: strategy) else { return }
+        var vNode = store.down(column)
+        var hNode: Store<R>.NodeId
+        
+        store.coverNode(column)
+        while true {
+            while vNode != column || backtrack {
+                if !backtrack {
+                    solvedRows.append(store.row(of: vNode)!)
+                    hNode = store.right(vNode)
+                    while hNode != vNode {
+                        store.coverNode(hNode)
+                        hNode = store.right(hNode)
+                    }
+                }
+                if header == store.right(header) {
+                    handler(Solution(rows: solvedRows), state)
+                    if state.terminated { return }
+                } else {
+                    if (!backtrack) {
+                        k += 1
+                        stack.append(vNode)
+                        guard let newColumn = selectColumn(store: &store, header: header, strategy: strategy) else { return }
+                        column = newColumn
+                        store.coverNode(column)
+                        vNode = store.down(column)
+                        continue
+                    }
+                    backtrack = false
+                    vNode = stack.popLast()!
+                    column = store.column(of: vNode)
+                    k -= 1
+                }
+                
+                solvedRows.removeLast()
+                hNode = store.left(vNode)
+                while hNode != vNode {
+                    store.uncoverNode(hNode)
+                    hNode = store.left(hNode)
+                }
+                vNode = store.down(vNode)
+            }
+            store.uncoverNode(column)
+            if k > 0 { backtrack = true } else { return }
+        }
+    }
     
 }
