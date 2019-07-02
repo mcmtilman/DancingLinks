@@ -18,7 +18,7 @@ struct NQueens {
     
     /// Initializes the N-Queens problem for N >= 1. Fails otherwise.
     init?(number: Int) {
-        guard number >= 0 else { return nil }
+        guard number >= 1 else { return nil }
         
         self.number = number
     }
