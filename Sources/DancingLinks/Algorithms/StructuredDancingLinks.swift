@@ -348,7 +348,12 @@ public class StructuredDancingLinks: DancingLinks {
         let state = SearchState()
         var solvedRows = [R]()
         
-       func solve() -> () {
+        // Recursively search for a solution until we have exhausted all options.
+        // When all columns have been covered, pass the solution to the handler.
+        // Undo covering operations when backtracking.
+        // Stop searching when the handler sets the search state to terminated.
+        // Note. Passing variables in the scope as function parameters improves performance.
+        func solve(_ store: inout Store<R>, _ header: Store<R>.NodeId, _ state: SearchState, _ solvedRows: inout [R]) -> () {
             guard let column = selectColumn(store: &store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
             var vNode = store.down(column)
             
@@ -362,7 +367,7 @@ public class StructuredDancingLinks: DancingLinks {
                     hNode = store.right(hNode)
                 }
                 
-                solve()
+                solve(&store, header, state, &solvedRows)
                 guard !state.terminated else { return }
                 
                 solvedRows.removeLast()
@@ -376,7 +381,7 @@ public class StructuredDancingLinks: DancingLinks {
             store.uncoverNode(column)
         }
 
-        solve()
+        solve(&store, header, state, &solvedRows)
      }
     
 }
