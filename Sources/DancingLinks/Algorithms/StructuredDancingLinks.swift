@@ -328,7 +328,7 @@ public class StructuredDancingLinks: DancingLinks {
     }
     
     // Returns a mandatory column node according to the chosen strategy, or nil if none found.
-    fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
+    fileprivate func selectColumn<R>(store: Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
         switch strategy {
         case .naive: return store.firstColumn(header: header)
         case .minimumSize: return store.smallestColumn(header: header)
@@ -352,9 +352,9 @@ public class StructuredDancingLinks: DancingLinks {
         // When all columns have been covered, pass the solution to the handler.
         // Undo covering operations when backtracking.
         // Stop searching when the handler sets the search state to terminated.
-        // Note. Passing variables in the scope as function parameters improves performance.
-        func solve(_ store: inout Store<R>, _ header: Store<R>.NodeId, _ state: SearchState, _ solvedRows: inout [R]) -> () {
-            guard let column = selectColumn(store: &store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
+        // Note. Passing the store variable as function parameter improves performance.
+        func solve(_ store: inout Store<R>) -> () {
+            guard let column = selectColumn(store: store, header: header, strategy: strategy) else { return handler(Solution(rows: solvedRows), state) }
             var vNode = store.down(column)
             
             store.coverNode(column)
@@ -367,7 +367,7 @@ public class StructuredDancingLinks: DancingLinks {
                     hNode = store.right(hNode)
                 }
                 
-                solve(&store, header, state, &solvedRows)
+                solve(&store)
                 guard !state.terminated else { return }
                 
                 solvedRows.removeLast()
@@ -381,7 +381,7 @@ public class StructuredDancingLinks: DancingLinks {
             store.uncoverNode(column)
         }
 
-        solve(&store, header, state, &solvedRows)
+        solve(&store)
      }
     
 }
@@ -408,7 +408,7 @@ public class StructuredDancingLinksNR: StructuredDancingLinks {
         var stack = [Store<R>.NodeId]()
         var backtrack = false
         
-        guard var column = selectColumn(store: &store, header: header, strategy: strategy) else { return }
+        guard var column = selectColumn(store: store, header: header, strategy: strategy) else { return }
         var vNode = store.down(column)
         var hNode: Store<R>.NodeId
         
@@ -430,7 +430,7 @@ public class StructuredDancingLinksNR: StructuredDancingLinks {
                     if (!backtrack) {
                         k += 1
                         stack.append(vNode)
-                        guard let newColumn = selectColumn(store: &store, header: header, strategy: strategy) else { return }
+                        guard let newColumn = selectColumn(store: store, header: header, strategy: strategy) else { return }
                         column = newColumn
                         store.coverNode(column)
                         vNode = store.down(column)
