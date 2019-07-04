@@ -189,12 +189,12 @@ extension Sudoku {
     
     // MARK: Convenience initializing
     
-    /// Initialize the sudoku from given string.
+    /// Initializes the sudoku from given string.
     /// An empty cell is represented by the dot character, other cells by a single digit.
     /// Possible dimensions are (2,2), (2, 3), (2, 4), (3, 2), (3, 3), (4, 2).
-    /// The string may consist of multiple lines, one per row (grid format), or of a single line
-    /// of values in row-major order.
-    /// Fail if the dimensions are invalid or if the string contains invalid characters,
+    /// The string may consist of multiple lines of values, one line per row (grid format),
+    /// or of a single line of values in row-major order.
+    /// Fails if the dimensions are invalid or if the string contains invalid characters,
     ///
     /// - Parameter string: The values where each cell contains either a single digit or a dot.
     /// - Parameter rows: The number of rows within a box. Default = 3.
@@ -223,8 +223,8 @@ extension Sudoku {
 
     // MARK: Private initializing
     
-    // Initialize the sudoku from given string.
-    // Each line in the string represents a row. An empty cell is represented by the dot character, other cells by a single digit.
+    // Initializes the sudoku from given multi-line string, with each line representing a row.
+    // An empty cell is represented by the dot character, other cells by a single digit.
     //
     // - Parameter grid: The values, with rows separated by a newline.
     // - Parameter dimensions: The dimensions.
@@ -251,7 +251,7 @@ extension Sudoku {
         self.init(values: rows.flatMap { $0 }, dimensions: dimensions)
     }
     
-    // Initialize the sudoku from given string representing the values in row-major order.
+    // Initializes the sudoku from given string representing the values in row-major order.
     // An empty cell is represented by the dot character, other cells by a single digit.
     //
     // - Parameter line: The values in row-major order.
