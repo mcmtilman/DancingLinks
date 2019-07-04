@@ -180,28 +180,66 @@ extension Sudoku: Equatable {}
  */
 extension Sudoku {
     
+    // MARK: Formats
+    
+    // Supported string formats
+    enum Format {
+        case grid, line
+    }
+    
     // MARK: Convenience initializing
     
     /// Initialize the sudoku from given string.
-    /// Each line represents a row. An empty cell is represented by the dot character, other cells by a single digit.
+    /// An empty cell is represented by the dot character, other cells by a single digit.
     /// Possible dimensions are (2,2), (2, 3), (2, 4), (3, 2), (3, 3), (4, 2).
+    /// The string may consist of multiple lines, one per row (grid format), or of a single line
+    /// of values in row-major order.
+    /// Fail if the dimensions are invalid or if the string contains invalid characters,
     ///
-    /// - Parameter string: The values, with rows separated by a newline.
+    /// - Parameter string: The values where each cell contains either a single digit or a dot.
     /// - Parameter rows: The number of rows within a box. Default = 3.
     /// - Parameter columns: The number of columns within a box. Default = 3.
+    /// - Parameter format: String format. Default = grid.
     ///
-    /// Example of a sudoku with 2 by 2 boxes:
+    /// Example of a sudoku with 2 by 2 boxes using the grid format:
+    ///     """
     ///     1.2.
     ///     ...4
     ///     ..31
     ///     42..
-    // Note. (46, 48) = ascii codes of (".", "0").
-    init?(string: String, rows: Int = 3, columns: Int = 3) {
+    ///     """
+    /// Example of the same sudoku using the line format:
+    ///     "1.2....4..3142.."
+    init?(string: String, rows: Int = 3, columns: Int = 3, format: Format = .grid) {
         guard let dimensions = Dimensions(rows: rows, columns: columns) else { return nil }
         let size = dimensions.cells
         guard size >= 4, size <= 9 else { return nil }
-        
-        let lines = string.split(separator: "\n", omittingEmptySubsequences: false)
+
+        switch format {
+        case .grid: self.init(grid: string, dimensions: dimensions)
+        case .line: self.init(line: string, dimensions: dimensions)
+        }
+    }
+
+    // MARK: Private initializing
+    
+    // Initialize the sudoku from given string.
+    // Each line in the string represents a row. An empty cell is represented by the dot character, other cells by a single digit.
+    //
+    // - Parameter grid: The values, with rows separated by a newline.
+    // - Parameter dimensions: The dimensions.
+    //
+    // Example of a sudoku with 2 by 2 boxes:
+    //     """
+    //     1.2.
+    //     ...4
+    //     ..31
+    //     42..
+    //     """
+    // Note. (46, 48) = ascii codes of (".", "0").
+    private init?(grid: String, dimensions: Dimensions) {
+        let size = dimensions.cells
+        let lines = grid.components(separatedBy: "\n")
         guard lines.count == size else { return nil }
         
         let rows = lines.map { line in line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }}
@@ -211,6 +249,25 @@ extension Sudoku {
         }
         
         self.init(values: rows.flatMap { $0 }, dimensions: dimensions)
+    }
+    
+    // Initialize the sudoku from given string representing the values in row-major order.
+    // An empty cell is represented by the dot character, other cells by a single digit.
+    //
+    // - Parameter line: The values in row-major order.
+    // - Parameter dimensions: The dimensions.
+    //
+    // Example of a sudoku with 2 by 2 boxes:
+    //     "1.2....4..3142.."
+    // Note. (46, 48) = ascii codes of (".", "0").
+    private init?(line: String, dimensions: Dimensions) {
+        let size = dimensions.cells
+        guard line.count == size * size else { return nil }
+        
+        let values = line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }
+        for case let value? in values where value < 1 || value > size { return nil }
+        
+        self.init(values: values, dimensions: dimensions)
     }
     
     // MARK: Subscript accessing
