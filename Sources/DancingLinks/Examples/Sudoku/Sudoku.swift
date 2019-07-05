@@ -262,9 +262,9 @@ extension Sudoku {
     // Note. (46, 48) = ascii codes of (".", "0").
     private init?(line: String, dimensions: Dimensions) {
         let size = dimensions.cells
-        guard line.count == size * size else { return nil }
-        
         let values = line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }
+
+        guard values.count == size * size else { return nil }
         for case let value? in values where value < 1 || value > size { return nil }
         
         self.init(values: values, dimensions: dimensions)
