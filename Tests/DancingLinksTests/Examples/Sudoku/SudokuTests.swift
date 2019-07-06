@@ -190,10 +190,11 @@ class SudokuTests: XCTestCase {
         let values = ""
         
         XCTAssertNil(Sudoku(string: values, rows: 2, columns: 2))
+        XCTAssertNil(Sudoku(string: values, rows: 2, columns: 2, format: .line))
     }
     
-    // Test using a string input with empty lines.
-    func testEmptyLineString() {
+    // Test using a string input with an empty row.
+    func testEmptyRowString() {
         let values = """
             1...
             
@@ -215,6 +216,7 @@ class SudokuTests: XCTestCase {
             """
 
         XCTAssertNotNil(Sudoku(string: values, rows: 2, columns: 2))
+        XCTAssertNotNil(Sudoku(string: asLine(values), rows: 2, columns: 2, format: .line))
     }
     
     // Test if we can create a 2x3 sudoku from string.
@@ -229,6 +231,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNotNil(Sudoku(string: values, rows: 2, columns: 3))
+        XCTAssertNotNil(Sudoku(string: asLine(values), rows: 2, columns: 3, format: .line))
     }
     
     // Test if we can create a 3x2 sudoku from string.
@@ -243,6 +246,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNotNil(Sudoku(string: values, rows: 3, columns: 2))
+        XCTAssertNotNil(Sudoku(string: asLine(values), rows: 3, columns: 2, format: .line))
     }
     
     // Test if we can use a string input to create the evil sudoku.
@@ -270,8 +274,10 @@ class SudokuTests: XCTestCase {
             nil, 9, nil, nil, nil, nil, 4, nil, nil
         ]
         guard let sudoku = Sudoku(string: values) else { return XCTFail("Nil sudoku") }
-        
         XCTAssertEqual(sudoku.values, expectedValues)
+
+        guard let sudoku2 = Sudoku(string: asLine(values), format: .line) else { return XCTFail("Nil sudoku") }
+        XCTAssertEqual(sudoku2.values, expectedValues)
     }
     
     // Box conflict
@@ -290,6 +296,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values))
+        XCTAssertNil(Sudoku(string: asLine(values), format: .line))
     }
     
     // Column conflict
@@ -308,6 +315,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values))
+        XCTAssertNil(Sudoku(string: asLine(values), format: .line))
     }
     
     // Row conflict
@@ -326,6 +334,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values))
+        XCTAssertNil(Sudoku(string: asLine(values), format: .line))
     }
     
     // Box conflict
@@ -341,6 +350,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values, rows: 2, columns: 3))
+        XCTAssertNil(Sudoku(string: asLine(values), rows: 2, columns: 3, format: .line))
     }
     
     // Invalid non-digit value in string input
@@ -358,6 +368,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values))
+        XCTAssertNil(Sudoku(string: asLine(values), format: .line))
     }
     
     // Invalid low number in string input
@@ -370,6 +381,7 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values, rows: 2, columns: 2))
+        XCTAssertNil(Sudoku(string: asLine(values), rows: 2, columns: 2, format: .line))
     }
     
    // Invalid high number in string input
@@ -382,11 +394,33 @@ class SudokuTests: XCTestCase {
             """
         
         XCTAssertNil(Sudoku(string: values, rows: 2, columns: 2))
+        XCTAssertNil(Sudoku(string: asLine(values), rows: 2, columns: 2, format: .line))
     }
     
-    // Invalid rows size.
+    // Invalid number of columns.
     // Should be 2 or 3.
-    func testInvalidSize() {
+    func testInvalidColumns() {
+        let values = """
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            ............
+            """
+        
+        XCTAssertNil(Sudoku(string: values, rows: 3, columns: 4))
+    }
+    
+    // Invalid number of rows.
+    // Should be 2 or 3.
+    func testInvalidRows() {
         let values = """
             ............
             ............
@@ -404,7 +438,7 @@ class SudokuTests: XCTestCase {
         
         XCTAssertNil(Sudoku(string: values, rows: 4, columns: 3))
     }
-    
+
     // MARK: Testing sudoku dimensions
     
     // Test 2x2 dimensions.
@@ -530,6 +564,13 @@ class SudokuTests: XCTestCase {
         XCTAssertFalse(sudoku2.isComplete())
     }
 
+    // MARK: Input formatting
+    
+    // Converts a grind string input into a single line by removing new lines.
+    private func asLine(_ string: String) -> String {
+        string.replacingOccurrences(of: "\n", with: "")
+    }
+    
 }
 
 
@@ -550,7 +591,7 @@ extension SudokuTests {
         ("testInvalidNumberLow", testInvalidNumberLow),
         ("testInvalidRowSize", testInvalidRowSize),
         ("testEmptyString", testEmptyString),
-        ("testEmptyLineString", testEmptyLineString),
+        ("testEmptyRowString", testEmptyRowString),
         ("testTwoByTwoString", testTwoByTwoString),
         ("testTwoByThreeString", testTwoByThreeString),
         ("testThreeByTwoString", testThreeByTwoString),
@@ -562,7 +603,8 @@ extension SudokuTests {
         ("testInvalidLabel", testInvalidLabel),
         ("testInvalidLowerDigit", testInvalidLowerDigit),
         ("testInvalidUpperDigit", testInvalidUpperDigit),
-        ("testInvalidSize", testInvalidSize),
+        ("testInvalidColumns", testInvalidColumns),
+        ("testInvalidRows", testInvalidRows),
         ("testTwoByTwoDimensions", testTwoByTwoDimensions),
         ("testTwoByThreeDimensions", testTwoByThreeDimensions),
         ("testThreeByThreeDimensions", testThreeByThreeDimensions),
