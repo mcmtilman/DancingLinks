@@ -249,8 +249,8 @@ class SudokuTests: XCTestCase {
         XCTAssertNotNil(Sudoku(string: asLine(values), rows: 3, columns: 2, format: .line))
     }
     
-    // Test if we can use a string input to create the evil sudoku.
-    func testEvilString() {
+    // Test if we can use a grid string input to create the evil sudoku.
+    func testEvilGridString() {
         let values = """
             8........
             ..36.....
@@ -274,10 +274,27 @@ class SudokuTests: XCTestCase {
             nil, 9, nil, nil, nil, nil, 4, nil, nil
         ]
         guard let sudoku = Sudoku(string: values) else { return XCTFail("Nil sudoku") }
-        XCTAssertEqual(sudoku.values, expectedValues)
 
-        guard let sudoku2 = Sudoku(string: asLine(values), format: .line) else { return XCTFail("Nil sudoku") }
-        XCTAssertEqual(sudoku2.values, expectedValues)
+        XCTAssertEqual(sudoku.values, expectedValues)
+    }
+    
+    // Test if we can use a single-line string input to create the evil sudoku.
+    func testEvilLineString() {
+        let values = "8..........36......7..9.2...5...7.......457.....1...3...1....68..85...1..9....4.."
+        let expectedValues = [
+            8, nil, nil, nil, nil, nil, nil, nil, nil,
+            nil, nil, 3, 6, nil, nil, nil, nil, nil,
+            nil, 7, nil, nil, 9, nil, 2, nil, nil,
+            nil, 5, nil, nil, nil, 7, nil, nil, nil,
+            nil, nil, nil, nil, 4, 5, 7, nil, nil,
+            nil, nil, nil, 1, nil, nil, nil, 3, nil,
+            nil, nil, 1, nil, nil, nil, nil, 6, 8,
+            nil, nil, 8, 5, nil, nil, nil, 1, nil,
+            nil, 9, nil, nil, nil, nil, 4, nil, nil
+        ]
+        guard let sudoku = Sudoku(string: values, format: .line) else { return XCTFail("Nil sudoku") }
+
+        XCTAssertEqual(sudoku.values, expectedValues)
     }
     
     // Box conflict
@@ -595,7 +612,8 @@ extension SudokuTests {
         ("testTwoByTwoString", testTwoByTwoString),
         ("testTwoByThreeString", testTwoByThreeString),
         ("testThreeByTwoString", testThreeByTwoString),
-        ("testEvilString", testEvilString),
+        ("testEvilGridString", testEvilGridString),
+        ("testEvilLineString", testEvilLineString),
         ("testConflictInBox", testConflictInBox),
         ("testConflictInColumn", testConflictInColumn),
         ("testConflictInRow", testConflictInRow),
