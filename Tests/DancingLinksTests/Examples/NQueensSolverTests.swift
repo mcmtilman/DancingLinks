@@ -38,8 +38,8 @@ class NQueensSolverTests: XCTestCase {
     // The time for 63 queens is still acceptable for the unit tests, but jumps to 42 seconds for 64 queens.
     func testSolveManyQueens() {
         let number = 60
-        guard let largeQueens = NQueens(number: number) else { return XCTFail("Nil \(number)-Queens problem") }
-        guard let solution = NQueensSolver().solve(nQueens: largeQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
+        guard let manyQueens = NQueens(number: number) else { return XCTFail("Nil \(number)-Queens problem") }
+        guard let solution = NQueensSolver().solve(nQueens: manyQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
 
         XCTAssertEqual(solution.count, number)
         XCTAssertEqual(Set(solution).count, number)
