@@ -14,9 +14,9 @@ import XCTest
  */
 class NQueensSolverTests: XCTestCase {
 
-    // Test solving the N-Queens problem for a regular chessboard using ClassyDancingLinks.
+    // Tests solving the N-Queens problem for a regular chessboard using ClassyDancingLinks.
     func testSolveClassyEightQueens() {
-        guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
+        guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil 8-Queens problem") }
         
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
@@ -24,9 +24,9 @@ class NQueensSolverTests: XCTestCase {
         XCTAssertEqual(solutions.first, expected)
     }
     
-   // Test solving the N-Queens problem for a regular chessboard using StructuredDancingLinks.
+   // Tests solving the N-Queens problem for a regular chessboard using StructuredDancingLinks.
     func testSolveStructuredEightQueens() {
-        guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil N-Queens problem") }
+        guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil 8-Queens problem") }
         
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
         let solutions = NQueensSolver().solve(nQueens: eightQueens, limit: 1)
@@ -34,8 +34,23 @@ class NQueensSolverTests: XCTestCase {
         XCTAssertEqual(solutions.first, expected)
     }
     
-    // Test finding all solutions to the N-Queens problem for N in 1 ... 10.
-    // Verify:
+    // Tests solving the N-Queens problem for a large 60 by 60 chessboard using StructuredDancingLinks.
+    // The time for 63 queens is still acceptable for the unit tests, but jumps to 42 seconds for 64 queens.
+    func testSolveLargeQueens() {
+        let number = 60
+        guard let largeQueens = NQueens(number: number) else { return XCTFail("Nil \(number)-Queens problem") }
+        guard let solution = NQueensSolver().solve(nQueens: largeQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
+
+        XCTAssertEqual(solution.count, number)
+        XCTAssertEqual(Set(solution).count, number)
+        XCTAssertEqual(Set(solution.map { $0.rank }).count, number)
+        XCTAssertEqual(Set(solution.map { $0.file }).count, number)
+        XCTAssertEqual(Set(solution.map { $0.rank + $0.file }).count, number)
+        XCTAssertEqual(Set(solution.map { $0.rank - $0.file }).count, number)
+    }
+    
+    // Tests finding all solutions to the N-Queens problem for N in 1 ... 10.
+    // Verifies:
     // * the number of solutions (cf. Wikipedia),
     // * that each solution is unique,
     // * that each solution has N different squares,
@@ -74,6 +89,7 @@ extension NQueensSolverTests {
     static var allTests = [
         ("testSolveClassyEightQueens", testSolveClassyEightQueens),
         ("testSolveStructuredEightQueens", testSolveStructuredEightQueens),
+        ("testSolveLargeQueens", testSolveLargeQueens),
         ("testNQueensSolveAll", testNQueensSolveAll),
     ]
     
