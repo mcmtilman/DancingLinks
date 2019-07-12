@@ -36,7 +36,7 @@ class NQueensSolverTests: XCTestCase {
     
     // Tests solving the N-Queens problem for a large 60 by 60 chessboard using StructuredDancingLinks.
     // The time for 63 queens is still acceptable for the unit tests, but jumps to 42 seconds for 64 queens.
-    func testSolveLargeQueens() {
+    func testSolveManyQueens() {
         let number = 60
         guard let largeQueens = NQueens(number: number) else { return XCTFail("Nil \(number)-Queens problem") }
         guard let solution = NQueensSolver().solve(nQueens: largeQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
@@ -89,7 +89,7 @@ extension NQueensSolverTests {
     static var allTests = [
         ("testSolveClassyEightQueens", testSolveClassyEightQueens),
         ("testSolveStructuredEightQueens", testSolveStructuredEightQueens),
-        ("testSolveLargeQueens", testSolveLargeQueens),
+        ("testSolveManyQueens", testSolveManyQueens),
         ("testNQueensSolveAll", testNQueensSolveAll),
     ]
     
