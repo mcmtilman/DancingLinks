@@ -5,6 +5,9 @@
 //  Copyright © 2019 Dotted.Pair.
 //  Licensed under Apache License v2.0.
 //
+
+import Foundation
+
 /**
  Dimensions of a sudoku box. Specifies the number of rows and columns.
  */
