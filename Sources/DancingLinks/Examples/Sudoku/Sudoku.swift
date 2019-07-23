@@ -240,7 +240,7 @@ extension Sudoku {
     // Note. (46, 48) = ascii codes of (".", "0").
     private init?(grid: String, dimensions: Dimensions) {
         let size = dimensions.cells
-        let lines = grid.components(separatedBy: "\n")
+        let lines = grid.split(separator: "\n", omittingEmptySubsequences: false)
         guard lines.count == size else { return nil }
         
         let rows = lines.map { line in line.unicodeScalars.map { $0.value == 46 ? nil : Int($0.value) - 48 }}
