@@ -6,7 +6,7 @@ Swift implementations of Knuth's *Dancing Links* algorithm (see also *DLX* and *
 
 ## Scala and Pharo implementations
 
-An initial, straightforward implementation was first developed in *Scala* based on an existing *Java* example, but with some additional abstractions. The Java and Scala algorithms were able to solve the 'evil' sudoku (cf. below) in about 1 ms.
+An initial, straightforward implementation was first developed in *Scala* based on an existing *Java* example, but with some additional abstractions. The Java and Scala algorithms were able to solve the following 'evil' sudoku (Inkala 2012) in about 1 ms.
 
     8........
     ..36.....
