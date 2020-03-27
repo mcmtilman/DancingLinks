@@ -52,4 +52,8 @@ All benchmarks used release builds with full enforcement of exclusive access to 
 
 # Requirements
 
-The code has been tested with the Swift 5.1 Snapshot 2019-06-28 XCode toolchain and XCode 11.0 beta 2.
+The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode toolchain and XCode XCode 11.0 beta 2.
+
+# Note
+
+Using XCode 10.4 with the built-in toolchain results in a dramatic performance decrease, in particular for the struct-based implementation, which is now slower than the class-based variant.
