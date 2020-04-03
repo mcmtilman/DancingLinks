@@ -56,4 +56,7 @@ The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode 
 
 # Note
 
-Using XCode 10.4 with the built-in toolchain results in a dramatic performance decrease, in particular for the struct-based implementation, which is now slower than the class-based variant.
+Using XCode 10.4 with the built-in 5.2 toolchain results in a dramatic performance decrease, in particular for the struct-based implementation, which is now slower than the class-based variant.
+
+The Swift 5.2 Release 2020-03-24 toolchain (available from swift.org) improves a bit on the XCode 10.4 toolchain.
+
