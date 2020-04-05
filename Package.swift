@@ -11,14 +11,14 @@ let package = Package(
             targets: ["DancingLinks"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/mcmtilman/Common.git"),
+        .package(url: "https://github.com/mcmtilman/Common.git", .branch("master")),
     ],
     targets: [
         .target(
             name: "DancingLinks",
-            dependencies: []),
+            dependencies: ["Common"]),
         .testTarget(
             name: "DancingLinksTests",
-            dependencies: ["DancingLinks"]),
+            dependencies: ["DancingLinks", "Common"]),
     ]
 )
