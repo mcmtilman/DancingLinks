@@ -54,9 +54,10 @@ All benchmarks used release builds with full enforcement of exclusive access to 
 
 The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode toolchain and XCode XCode 11.0 beta 2.
 
-# Note
+# Note for Swift 5.2 toolchains
 
 Using XCode 10.4 with the built-in 5.2 toolchain results in a dramatic performance decrease, in particular for the struct-based implementation, which is now slower than the class-based variant.
 
 The Swift 5.2 Release 2020-03-24 toolchain (available from swift.org) improves a bit on the XCode 10.4 toolchain.
 
+To mitigate the 5.2 overhead a bit, some changes were made to the *StructuredDancingLinks* implementation, most notably by using a *ContiguousArray* to store the nodes, in addition to some explicit @inline(__always) annotations.
