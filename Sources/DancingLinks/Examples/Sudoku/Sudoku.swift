@@ -6,6 +6,8 @@
 //  Licensed under Apache License v2.0.
 //
 
+import Common
+
 /**
  Dimensions of a sudoku box. Specifies the number of rows and columns.
  */
@@ -85,7 +87,7 @@ extension Dimensions: Equatable {}
  * Number of sudoku cells = 36
  * Each non-nil cell value must lie in the range 1 ... 6 and be unique in the houses containing that cell.
  */
-struct Sudoku {
+public struct Sudoku {
     
     // MARK: Stored properties
     
@@ -124,7 +126,7 @@ struct Sudoku {
     /// - Parameter values: List of givens and empty cells (nil values), in row-major order.
     /// - Parameter rows: The number of rows within a box. Default = 3.
     /// - Parameter columns: The number of columns within a box. Default = 3.
-    init?(values: [Int?], rows: Int = 3, columns: Int = 3) {
+    public init?(values: [Int?], rows: Int = 3, columns: Int = 3) {
         guard let dimensions = Dimensions(rows: rows, columns: columns) else { return nil }
         
         self.init(values: values, dimensions: dimensions)
@@ -184,7 +186,7 @@ extension Sudoku {
     // MARK: Formats
     
     // Supported string formats
-    enum Format {
+    public enum Format {
         case grid, line
     }
     
@@ -211,7 +213,7 @@ extension Sudoku {
     ///     """
     /// Example of the same sudoku using the line format:
     ///     "1.2....4..3142.."
-    init?(string: String, rows: Int = 3, columns: Int = 3, format: Format = .grid) {
+    public init?(string: String, rows: Int = 3, columns: Int = 3, format: Format = .grid) {
         guard let dimensions = Dimensions(rows: rows, columns: columns) else { return nil }
         let size = dimensions.cells
         guard size >= 4, size <= 9 else { return nil }
@@ -275,20 +277,20 @@ extension Sudoku {
     
     /// Returns the element at given zero-based position in row-major order.
     /// Fails if out of range.
-    subscript(index: Int) -> Int? {
+    public subscript(index: Int) -> Int? {
         values[index]
     }
     
     /// Returns the element at given zero-based row and column.
     /// Fails if out of range.
-    subscript(row: Int, column: Int) -> Int? {
+    public subscript(row: Int, column: Int) -> Int? {
         values[row * size + column]
     }
     
     // MARK: Testing
     
     /// Returns true if there are no empty cells, false otherwise.
-    func isComplete() -> Bool {
+    public func isComplete() -> Bool {
         !values.contains(nil)
     }
     

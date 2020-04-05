@@ -9,16 +9,18 @@
 /**
  Specifies the number of queens and the size of the (square) chessboard.
  */
-struct NQueens {
+public struct NQueens {
     
     // MARK: Stored properties
     
     // Number of queens = number of ranks and files on chessboard.
     let number: Int
     
+    // MARK: Initializing
+    
     /// Initializes the N-Queens problem for N >= 1. Fails otherwise.
     /// Default = 8.
-    init?(number: Int = 8) {
+    public init?(number: Int = 8) {
         guard number >= 1 else { return nil }
         
         self.number = number
@@ -30,13 +32,20 @@ struct NQueens {
 /**
  A chess square.
  */
-struct Square: Hashable {
+public struct Square: Hashable {
     
-    /// Rank of the square.
-    let rank: Int
+    // MARK: Stored properties
     
-    /// File of the square.
-    let file: Int
+    /// Rank and file of the square.
+    public let rank, file: Int
+ 
+    // MARK: Initializing
+    
+    /// Default initializer is internal.
+    public init(rank: Int, file: Int) {
+        self.rank = rank
+        self.file = file
+    }
     
 }
 
@@ -84,19 +93,14 @@ extension NQueens: Grid {
 /**
  N-Queens problem solver using DancingLinks algorithm.
  */
-class NQueensSolver {
-    
-    // MARK: Defaults
-    
-    // Default algorithm.
-    private static let dlx = StructuredDancingLinks()
+public class NQueensSolver {
     
     // MARK: Solving N-Queens problem
     
     /// Returns solutions of the N-Queens problem, optionally up to a limit.
     /// Default algorithm = StructuredDancingLinks.
-    func solve(nQueens: NQueens, algorithm: DancingLinks = dlx, limit: Int? = nil) -> [[Square]] {
-        algorithm.solve(grid: nQueens, limit: limit).map { $0.rows }
+    public static func solve(nQueens: NQueens, algorithm: DancingLinksAlgorithm = .structured, limit: Int? = nil) -> [[Square]] {
+        algorithm.solver.solve(grid: nQueens, limit: limit).map { $0.rows }
     }
     
 }

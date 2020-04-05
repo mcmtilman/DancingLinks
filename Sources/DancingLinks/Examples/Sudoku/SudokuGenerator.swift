@@ -6,13 +6,22 @@
 //  Licensed under Apache License v2.0.
 //
 
+import Common
+
 /**
  Generates sudoku solutions starting from an empty grid using random value placement.
  */
-class RandomSudokuGenerator {
+public class RandomSudokuGenerator {
     
-    // Generates a random solution for sudokus with given dimensions
-    func generateSolution(rows: Int = 3, columns: Int = 3) -> Sudoku? {
+    // MARK: Initializing
+    
+    /// Default public initializer must be declared explicitly
+    public init() {}
+    
+    // MARK: Generating
+    
+    /// Generates a random solution for sudokus with given dimensions
+    public func generateSolution(rows: Int = 3, columns: Int = 3) -> Sudoku? {
         let size = rows * columns, cells = size * size
         var rowOptions = [BitSet](repeating: BitSet(1 ... size), count: size)
         var columnOptions = [BitSet](repeating: BitSet(1 ... size), count: size)
@@ -23,8 +32,8 @@ class RandomSudokuGenerator {
             guard cell < cells else { return Sudoku(values: values, rows: rows, columns: columns) }
             
             let row = cell / size, column = cell % size, box = row / rows * rows + column / columns
-            let savedRow = rowOptions[row], savedColumn = columnOptions[column], savedBox = boxOptions[box]
-            var options = savedRow.intersection(savedColumn).intersection(savedBox)
+            let saved = (row: rowOptions[row], column: columnOptions[column], box: boxOptions[box])
+            var options = saved.row.intersection(saved.column).intersection(saved.box)
             
             while let value = options.randomElement() {
                 values[cell] = value
@@ -34,9 +43,7 @@ class RandomSudokuGenerator {
                 if let solution = generate(cell + 1) {
                     return solution
                 }
-                rowOptions[row] = savedRow
-                columnOptions[column] = savedColumn
-                boxOptions[box] = savedBox
+                (rowOptions[row], columnOptions[column], boxOptions[box]) = saved
                 options.remove(value)
             }
             

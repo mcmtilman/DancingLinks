@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import DancingLinks
+import DancingLinks
 
 /**
  Tests solving sudokus.

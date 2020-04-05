@@ -112,7 +112,7 @@ class SudokuSolverTests: XCTestCase {
             .........
             """
         guard let sudoku = Sudoku(string: string) else { return XCTFail("Nil sudoku") }
-        let solution = SudokuSolver().solve(sudoku: sudoku)
+        let solution = SudokuSolver.solve(sudoku: sudoku)
         
         XCTAssertNotNil(solution)
     }
@@ -131,7 +131,7 @@ class SudokuSolverTests: XCTestCase {
             796318452
             """
         let evil = Sudoku.evil
-        let solution = SudokuSolver().solve(sudoku: evil, algorithm: ClassyDancingLinks())
+        let solution = SudokuSolver.solve(sudoku: evil, algorithm: .classy)
         
         XCTAssertNotNil(solution)
         XCTAssertEqual(solution, Sudoku(string: string))
@@ -151,7 +151,7 @@ class SudokuSolverTests: XCTestCase {
             796318452
             """
         let evil = Sudoku.evil
-        let solution = SudokuSolver().solve(sudoku: evil)
+        let solution = SudokuSolver.solve(sudoku: evil)
         
         XCTAssertNotNil(solution)
         XCTAssertEqual(solution, Sudoku(string: string))
@@ -171,7 +171,7 @@ class SudokuSolverTests: XCTestCase {
         }
 
         guard let sudoku = Sudoku(values: values, rows: 20, columns: 2) else { return XCTFail("Nil sudoku") }
-        guard let solution = SudokuSolver().solve(sudoku: sudoku) else { return XCTFail("Nil solution") }
+        guard let solution = SudokuSolver.solve(sudoku: sudoku) else { return XCTFail("Nil solution") }
         
         for i in 0 ..< 40 {
             XCTAssertNil(sudoku[i])

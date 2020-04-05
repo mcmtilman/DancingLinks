@@ -6,6 +6,8 @@
 //  Licensed under Apache License v2.0.
 //
 
+import Common
+
 /**
  A cell with (resolved) given in a sudoku.
  */
@@ -90,20 +92,15 @@ extension Sudoku: Grid {
 /**
  Sudoku solver using DancingLinks algorithm.
  */
-class SudokuSolver {
-    
-    // MARK: Defaults
-    
-    // Default algorithm.
-    private static let dlx = StructuredDancingLinks()
+public class SudokuSolver {
     
     // MARK: Solving sudokus
     
     /// Returns a solution of the sudoku, or nil if no solution found.
     /// Does not verify the existence of additional solutions.
     /// Default algorithm = StructuredDancingLinks.
-    func solve(sudoku: Sudoku, algorithm: DancingLinks = dlx) -> Sudoku? {
-        guard let solution = algorithm.solve(grid: sudoku) else { return nil }
+    public static func solve(sudoku: Sudoku, algorithm: DancingLinksAlgorithm = .structured) -> Sudoku? {
+        guard let solution = algorithm.solver.solve(grid: sudoku) else { return nil }
         var values = [Int?](repeating: nil, count: sudoku.cells)
         
         for row in solution.rows {

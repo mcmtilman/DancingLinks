@@ -54,13 +54,13 @@ fileprivate class MockDancingLinks: DancingLinks {
 /**
  Tests convenience solvers.
  */
-final class DancingLinksTests: XCTestCase {
+class DancingLinksTests: XCTestCase {
     
     // MARK: Covenience properties
     
-    private var dlx: MockDancingLinks { MockDancingLinks() }
+    private let dlx = MockDancingLinks()
     
-    private var grid: MockGrid { MockGrid(rows: 5) }
+    private let grid = MockGrid(rows: 5)
     
     // MARK: Testing
 

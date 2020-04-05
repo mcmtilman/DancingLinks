@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import DancingLinks
+import DancingLinks
 
 /**
  Tests solving the N-Queens probleem.
@@ -19,7 +19,7 @@ class NQueensSolverTests: XCTestCase {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil 8-Queens problem") }
         
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
-        let solutions = NQueensSolver().solve(nQueens: eightQueens, algorithm: ClassyDancingLinks(), limit: 1)
+        let solutions = NQueensSolver.solve(nQueens: eightQueens, algorithm: .classy, limit: 1)
         
         XCTAssertEqual(solutions.first, expected)
     }
@@ -29,7 +29,7 @@ class NQueensSolverTests: XCTestCase {
         guard let eightQueens = NQueens(number: 8) else { return XCTFail("Nil 8-Queens problem") }
         
         let expected = [(0, 0), (1, 4), (2, 7), (3, 5), (6, 1), (4, 2), (5, 6), (7, 3)].map(Square.init)
-        let solutions = NQueensSolver().solve(nQueens: eightQueens, limit: 1)
+        let solutions = NQueensSolver.solve(nQueens: eightQueens, limit: 1)
 
         XCTAssertEqual(solutions.first, expected)
     }
@@ -39,7 +39,7 @@ class NQueensSolverTests: XCTestCase {
     func testSolveManyQueens() {
         let number = 60
         guard let manyQueens = NQueens(number: number) else { return XCTFail("Nil \(number)-Queens problem") }
-        guard let solution = NQueensSolver().solve(nQueens: manyQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
+        guard let solution = NQueensSolver.solve(nQueens: manyQueens, limit: 1).first else { return XCTFail("Nil solution for \(number)-Queens problem") }
 
         XCTAssertEqual(solution.count, number)
         XCTAssertEqual(Set(solution).count, number)
@@ -63,7 +63,7 @@ class NQueensSolverTests: XCTestCase {
         
         for (number, count) in cases {
             guard let nQueens = NQueens(number: number) else { XCTFail("Nil \(number)-Queens problem"); continue }
-            let solutions = NQueensSolver().solve(nQueens: nQueens)
+            let solutions = NQueensSolver.solve(nQueens: nQueens)
             
             XCTAssertEqual(solutions.count, count)
             XCTAssertEqual(Set(solutions).count, count)
