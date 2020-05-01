@@ -10,7 +10,7 @@
  Manages the nodes.
  Handles node-related operations.
  */
-fileprivate struct Store<RowId> where RowId: Hashable {
+fileprivate struct Store<RowId> {
 
     // References a node in the store.
     typealias NodeId = Int

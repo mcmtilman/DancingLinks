@@ -7,7 +7,7 @@
 //
 
 // A node in the grid. Subclasses represent row, column and header nodes.
-fileprivate class Node<RowId> where RowId: Hashable {
+fileprivate class Node<RowId> {
     
     // Row node at the intersection of a row and a constraint column.
     class Row: Node {
