@@ -321,12 +321,12 @@ class ClassyDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
         let header = makeNodes(grid: grid)
         let state = SearchState()
-        var solvedRows = [R]()
+        var solvedRows = [G.RowId]()
         
         // Recursively search for a solution until we have exhausted all options.
         // When all columns have been covered, pass the solution to the handler.
@@ -358,11 +358,11 @@ class ClassyDancingLinks: DancingLinks {
     // MARK: Private constructing grid
     
     // For each row in the grid, adds a node with given row id for each column in the row.
-    private func makeNodes<G, R>(grid: G) -> Node<R>.Header where G: Grid, R == G.RowId {
-        let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<R>.Column(mandatory: c < grid.constraints) }
-        let header = Node<R>.Header(columns: columns)
+    private func makeNodes<G>(grid: G) -> Node<G.RowId>.Header where G: Grid {
+        let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<G.RowId>.Column(mandatory: c < grid.constraints) }
+        let header = Node<G.RowId>.Header(columns: columns)
 
-        grid.generateRows { (row: R, constraints: Int...) in
+        grid.generateRows { (row: G.RowId, constraints: Int...) in
             guard let constraint = constraints.first else { return }
             
             _ = constraints.dropFirst().reduce(columns[constraint].appendNode(row: row)) { node, constraint in node.insertRightNode(columns[constraint].appendNode(row: row)) }

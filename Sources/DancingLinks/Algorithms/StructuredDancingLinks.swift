@@ -80,7 +80,7 @@ fileprivate struct Store<RowId> where RowId: Hashable {
         nodes.count
     }
     
-    // MARK: Initizaling
+    // MARK: Initializing
     
     // Initializes the node store with given initial capacity.
     init(size: Int) {
@@ -237,24 +237,18 @@ fileprivate struct Store<RowId> where RowId: Hashable {
     // Returns the first mandatory column with the least rows, or nil if none found.
     // Note. Mandatory columns precede optional columns in the list.
     func smallestColumn(header: NodeId) -> NodeId? {
-        let columnId = nodes[header].right
-        guard columnId != header else { return nil }
-        
-        var column = nodes[columnId]
-        guard column.mandatory else { return nil }
-        
+        var column = nodes[right(header)]
+        guard column.id != header, column.mandatory else { return nil }
         var node = nodes[column.right]
-        
+
         while node.mandatory {
             if node.size < column.size { column = node }
             node = nodes[node.right]
         }
-        
+
         return column.id
     }
-    
-    // MARK: Testing
-    
+
     // MARK: Private creating nodes
     
     // Adds the node to the store.
@@ -322,19 +316,19 @@ fileprivate struct Store<RowId> where RowId: Hashable {
 class StructuredDancingLinks: DancingLinks {
     
     // For each row in the grid, adds a node with given row id for each column in the row.
-    fileprivate func makeNodes<G, R>(grid: G, store: inout Store<R>) -> Store<R>.NodeId where G: Grid, R == G.RowId {
+    fileprivate func makeNodes<G>(grid: G, store: inout Store<G.RowId>) -> Store<G.RowId>.NodeId where G: Grid {
         let columnNodes = (0 ..< grid.constraints + grid.optionalConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
         let header = store.makeHeaderNode(columnNodes: columnNodes)
-        
-        grid.generateRows { (row: R, columns: Int...) in
+
+        grid.generateRows { (row: G.RowId, columns: Int...) in
             guard let c = columns.first else { return }
-            
+
             _ = columns.dropFirst().reduce(store.appendNode(row: row, column: columnNodes[c])) { n, c in store.insertNode(store.appendNode(row: row, column: columnNodes[c]), after: n) }
         }
-        
+
         return header
     }
-    
+
     // Returns a mandatory column node according to the chosen strategy, or nil if none found.
     fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
         switch strategy {
@@ -348,13 +342,13 @@ class StructuredDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
-        var store = Store<R>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
+        var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
         let header = makeNodes(grid: grid, store: &store)
         let state = SearchState()
-        var solvedRows = [R]()
+        var solvedRows = [G.RowId]()
         
         // Recursively search for a solution until we have exhausted all options.
         // When all columns have been covered, pass the solution to the handler.
@@ -405,20 +399,20 @@ class StructuredDancingLinksNR: StructuredDancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
-        var store = Store<R>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
+        var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
         let header = makeNodes(grid: grid, store: &store)
         let state = SearchState()
-        var solvedRows = [R]()
+        var solvedRows = [G.RowId]()
         var k = 0
-        var stack = [Store<R>.NodeId]()
+        var stack = [Store<G.RowId>.NodeId]()
         var backtrack = false
         
         guard var column = selectColumn(store: &store, header: header, strategy: strategy) else { return }
         var vNode = store.down(column)
-        var hNode: Store<R>.NodeId
+        var hNode: Store<G.RowId>.NodeId
         
         store.coverNode(column)
         while true {

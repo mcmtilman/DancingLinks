@@ -116,7 +116,7 @@ class DancingLinks {
     /// The handler stops the search by marking the search state as terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
     /// Abstract method, must be overridden in subclasses.
-    func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         fatalError("Abstract method must be overridden")
     }
     
@@ -130,8 +130,8 @@ extension DancingLinks {
     
     /// Returns the solutions, optionally up to a limit.
     /// The default search strategy selects the first column with smallest size.
-    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<R>] where G: Grid, R == G.RowId {
-        var solutions = [Solution<R>]()
+    func solve<G>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<G.RowId>] where G: Grid {
+        var solutions = [Solution<G.RowId>]()
 
         solve(grid: grid, strategy: strategy) { solution, state in
             guard let limit = limit else { return solutions.append(solution) }
@@ -149,7 +149,7 @@ extension DancingLinks {
     
     /// Returns the first solution found, or nil if no solution found.
     /// The default search strategy selects the first column with smallest size.
-    func solve<G, R>(grid: G, strategy: SearchStrategy = .minimumSize) -> Solution<R>? where G: Grid, R == G.RowId {
+    func solve<G>(grid: G, strategy: SearchStrategy = .minimumSize) -> Solution<G.RowId>? where G: Grid {
         solve(grid: grid, strategy: strategy, limit: 1).first
     }
     

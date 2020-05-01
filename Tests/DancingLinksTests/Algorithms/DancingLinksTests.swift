@@ -35,16 +35,16 @@ fileprivate struct MockGrid: Grid {
 // Each solution contains all the rows in input order.
 fileprivate class MockDancingLinks: DancingLinks {
     
-    override func solve<G, R>(grid: G, strategy: SearchStrategy, handler: (Solution<R>, SearchState) -> ()) where G: Grid, R == G.RowId {
+    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         let state = SearchState()
-        var rows = [R]()
+        var rows = [G.RowId]()
         
-        grid.generateRows { (row: R, constraints: Int...) in rows.append(row) }
+        grid.generateRows { (row: G.RowId, constraints: Int...) in rows.append(row) }
         
         for _ in rows {
             guard !state.terminated else { return }
             
-            handler(Solution<R>(rows: rows), state)
+            handler(Solution<G.RowId>(rows: rows), state)
         }        
     }
     
