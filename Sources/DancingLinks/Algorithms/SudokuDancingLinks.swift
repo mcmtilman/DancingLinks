@@ -10,7 +10,7 @@
  Manages the nodes.
  Handles node-related operations.
  */
-fileprivate struct Store<RowId> {
+fileprivate struct Store {
 
     // References a node in the store.
     typealias NodeId = Int
@@ -36,7 +36,7 @@ fileprivate struct Store<RowId> {
         
         // Client row reference. Same for all nodes in the same row.
         // Nil for headers and columns.
-        let row: RowId?
+        let row: Cell?
         
         // Number of row nodes in a column. Only used by column nodes.
         var size = 0
@@ -54,7 +54,7 @@ fileprivate struct Store<RowId> {
         }
         
         // Initializes a row node.
-        init(row: RowId, column: NodeId, id: NodeId) {
+        init(row: Cell, column: NodeId, id: NodeId) {
             self.init(row, column, id, false)
         }
         
@@ -62,7 +62,7 @@ fileprivate struct Store<RowId> {
         
         // Initializes a header, column or row node.
         // Initially all references to linked nodes point to the node itself.
-        private init(_ r: RowId?, _ c: NodeId, _ i: NodeId, _ m: Bool) {
+        private init(_ r: Cell?, _ c: NodeId, _ i: NodeId, _ m: Bool) {
             (id, left, right, up, down, row, column, mandatory) = (i, i, i, i, i, r, c, m)
         }
         
@@ -71,7 +71,7 @@ fileprivate struct Store<RowId> {
     // MARK: Private stored properties
     
     // Node store.
-    private var nodes: ContiguousArray<Node>
+    private var nodes: [Node]
     
     // MARK: Private computed properties
     
@@ -107,7 +107,7 @@ fileprivate struct Store<RowId> {
     
     // Makes a node for given row, column and adds it to the store.
     // Returns the node.
-    mutating func makeNode(row: RowId, column: NodeId) -> NodeId {
+    mutating func makeNode(row: Cell, column: NodeId) -> NodeId {
         storeNode(Node(row: row, column: column, id: nextId))
     }
     
@@ -115,7 +115,7 @@ fileprivate struct Store<RowId> {
     
     // Inserts a new node for given row at the bottom of the column.
     // Returns the new node.
-    mutating func appendNode(row: RowId, column: NodeId) -> NodeId {
+    mutating func appendNode(row: Cell, column: NodeId) -> NodeId {
         let columnNode = nodes[column]
         let node = makeNode(row: row, column: column)
         
@@ -144,38 +144,32 @@ fileprivate struct Store<RowId> {
     // MARK: Accessing
     
     // Returns the column of given node.
-    @inline(__always)
     func column(of node: NodeId) -> NodeId {
         nodes[node].column
     }
     
     // Returns the node directly below given node.
-    @inline(__always)
     func down(_ node: NodeId) -> NodeId {
         nodes[node].down
     }
     
     // Returns the node directly to the left of given node.
-    @inline(__always)
     func left(_ node: NodeId) -> NodeId {
         nodes[node].left
     }
     
     // Returns the node directly to the right of given node.
-    @inline(__always)
     func right(_ node: NodeId) -> NodeId {
         nodes[node].right
     }
     
     // Returns the node directly above given node.
-    @inline(__always)
     func up(_ node: NodeId) -> NodeId {
         nodes[node].up
     }
     
     // Returns the row reference of given node.
-    @inline(__always)
-    func row(of node: NodeId) -> RowId? {
+    func row(of node: NodeId) -> Cell? {
         nodes[node].row
     }
     
@@ -262,7 +256,6 @@ fileprivate struct Store<RowId> {
     // MARK: Private accessing
     
     // Update the column size with given amount.
-    @inline(__always)
     private mutating func updateColumnSize(of node: NodeId, with amount: Int) {
         let columnNode = column(of: node)
         
@@ -272,7 +265,6 @@ fileprivate struct Store<RowId> {
     // MARK: Private DancingLinks operations
     
     // Re-inserts the node in its row.
-    @inline(__always)
     private mutating func relinkInRow(node: NodeId) {
         let left = nodes[node].left, right = nodes[node].right
         
@@ -281,7 +273,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Re-inserts the node in its column.
-    @inline(__always)
     private mutating func relinkInColumn(node: NodeId) {
         let down = nodes[node].down, up = nodes[node].up
         
@@ -290,7 +281,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Removes the node from its row.
-    @inline(__always)
     private mutating func unlinkFromRow(node: NodeId) {
         let left = nodes[node].left, right = nodes[node].right
         
@@ -299,7 +289,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Removes the node from its column.
-    @inline(__always)
     private mutating func unlinkFromColumn(node: NodeId) {
         let down = nodes[node].down, up = nodes[node].up
         
@@ -311,21 +300,21 @@ fileprivate struct Store<RowId> {
 
 
 // For each row in the grid, adds a node with given row id for each column in the row.
-fileprivate func makeNodes<G>(grid: G, store: inout Store<G.RowId>) -> Store<G.RowId>.NodeId where G: Grid {
+fileprivate func makeNodes(grid: Sudoku, store: inout Store) -> Store.NodeId {
     let columnNodes = (0 ..< grid.constraints + grid.optionalConstraints).map { i in store.makeColumnNode(mandatory: i < grid.constraints) }
     let header = store.makeHeaderNode(columnNodes: columnNodes)
-
-    grid.generateRows { (row: G.RowId, columns: Int...) in
+    
+    grid.generateRows { (row: Cell, columns: Int...) in
         guard let c = columns.first else { return }
-
+        
         _ = columns.dropFirst().reduce(store.appendNode(row: row, column: columnNodes[c])) { n, c in store.insertNode(store.appendNode(row: row, column: columnNodes[c]), after: n) }
     }
-
+    
     return header
 }
 
 // Returns a mandatory column node according to the chosen strategy, or nil if none found.
-fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId, strategy: SearchStrategy) -> Store<R>.NodeId? {
+fileprivate func selectColumn(store: inout Store, header: Store.NodeId, strategy: SearchStrategy) -> Store.NodeId? {
     switch strategy {
     case .naive: return store.firstColumn(header: header)
     case .minimumSize: return store.smallestColumn(header: header)
@@ -336,20 +325,20 @@ fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId,
 /**
  Implementation of the DancingLinks algorithm using structs for nodes.
  */
-class StructuredDancingLinks: DancingLinks {
+class SudokuDancingLinks {
     
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve(grid: Sudoku, strategy: SearchStrategy, handler: (Solution<Cell>, SearchState) -> ()) {
         guard grid.constraints > 0 else { return }
         
-        var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
+        var store = Store(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
         let header = makeNodes(grid: grid, store: &store)
         let state = SearchState()
-        var solvedRows = [G.RowId]()
+        var solvedRows = [Cell]()
         
         // Recursively search for a solution until we have exhausted all options.
         // When all columns have been covered, pass the solution to the handler.
@@ -387,75 +376,48 @@ class StructuredDancingLinks: DancingLinks {
         solve()
      }
     
-}
+    /// Returns the solutions, optionally up to a limit.
+    /// The default search strategy selects the first column with smallest size.
+    func solve(grid: Sudoku, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<Cell>] {
+        var solutions = [Solution<Cell>]()
 
-/**
- Non-recursive implementation of the DancingLinks algorithm using structs for nodes.
- Experimental (cf. article *Non-Recursive Dancing Links* by Jan Magne Tjensvold).
- */
-class StructuredDancingLinksNR: DancingLinks {
-    
-    /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
-    /// Grid and solution use the same type of row identification.
-    /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
-    /// The handler can set the search state to terminated.
-    /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
-        guard grid.constraints > 0 else { return }
-        
-        var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
-        let header = makeNodes(grid: grid, store: &store)
-        let state = SearchState()
-        var solvedRows = [G.RowId]()
-        var k = 0
-        var stack = [Store<G.RowId>.NodeId]()
-        var backtrack = false
-        
-        guard var column = selectColumn(store: &store, header: header, strategy: strategy) else { return }
-        var vNode = store.down(column)
-        var hNode: Store<G.RowId>.NodeId
-        
-        store.coverNode(column)
-        while true {
-            while vNode != column || backtrack {
-                if !backtrack {
-                    solvedRows.append(store.row(of: vNode)!)
-                    hNode = store.right(vNode)
-                    while hNode != vNode {
-                        store.coverNode(hNode)
-                        hNode = store.right(hNode)
-                    }
-                }
-                if header == store.right(header) {
-                    handler(Solution(rows: solvedRows), state)
-                    if state.terminated { return }
-                } else {
-                    if (!backtrack) {
-                        k += 1
-                        stack.append(vNode)
-                        guard let newColumn = selectColumn(store: &store, header: header, strategy: strategy) else { return }
-                        column = newColumn
-                        store.coverNode(column)
-                        vNode = store.down(column)
-                        continue
-                    }
-                    backtrack = false
-                    vNode = stack.popLast()!
-                    column = store.column(of: vNode)
-                    k -= 1
-                }
-                
-                solvedRows.removeLast()
-                hNode = store.left(vNode)
-                while hNode != vNode {
-                    store.uncoverNode(hNode)
-                    hNode = store.left(hNode)
-                }
-                vNode = store.down(vNode)
+        solve(grid: grid, strategy: strategy) { solution, state in
+            guard let limit = limit else { return solutions.append(solution) }
+            
+            if solutions.count < limit {
+                solutions.append(solution)
             }
-            store.uncoverNode(column)
-            if k > 0 { backtrack = true } else { return }
+            if solutions.count >= limit {
+                state.terminate()
+            }
         }
+        
+        return solutions
     }
     
+    /// Returns the first solution found, or nil if no solution found.
+    /// The default search strategy selects the first column with smallest size.
+    func solve(grid: Sudoku, strategy: SearchStrategy = .minimumSize) -> Solution<Cell>? {
+        solve(grid: grid, strategy: strategy, limit: 1).first
+    }
+    
+}
+
+extension SudokuSolver {
+    
+    /// Returns a solution of the sudoku, or nil if no solution found.
+    /// Does not verify the existence of additional solutions.
+    /// Uses non-generic DancinLinks algorithm.
+    public static func solveNative(sudoku: Sudoku) -> Sudoku? {
+        guard let solution = SudokuDancingLinks().solve(grid: sudoku) else { return nil }
+        var values = [Int?](repeating: nil, count: sudoku.cells)
+        
+        for row in solution.rows {
+            values[row.index] = row.value
+        }
+
+        return Sudoku(values: values, dimensions: sudoku.dimensions)
+    }
+
+
 }

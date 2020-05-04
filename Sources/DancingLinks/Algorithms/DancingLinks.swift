@@ -32,7 +32,7 @@ public enum DancingLinksAlgorithm {
 protocol Grid {
     
     /// Unique reference of a row.
-    associatedtype RowId where RowId: Hashable
+    associatedtype RowId
     
     /// Generates rows consisting of a reference and a list of constraint columns,
     /// Each row is input into the consumer.
