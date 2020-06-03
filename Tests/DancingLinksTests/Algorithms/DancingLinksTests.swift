@@ -65,12 +65,11 @@ class DancingLinksTests: XCTestCase {
     // MARK: Testing
 
     func testSolveEmptyGenerator() {
-        XCTAssertNil(dlx.solve(grid: MockGrid(rows: 0)))
         XCTAssertEqual(dlx.solve(grid: MockGrid(rows: 0)).count, 0)
     }
     
     func testSolveFirst() {
-        guard let solution = dlx.solve(grid: grid) else { return XCTFail("Nil solution") }
+        guard let solution = dlx.solve(grid: grid, limit: 1).first else { return XCTFail("Nil solution") }
         
         XCTAssertEqual(solution.rows.count, 5)
         XCTAssertEqual(solution.rows[0], 0)

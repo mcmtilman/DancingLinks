@@ -19,11 +19,7 @@ public enum DancingLinksAlgorithm {
     /// Returns the first solution found, or nil if no solution found.
     /// Uses the minimum column size search strategy.
     func solve<G>(grid: G) -> Solution<G.RowId>? where G: Grid {
-        switch self {
-        case .classy: return ClassyDancingLinks().solve(grid: grid)
-        case .structured: return StructuredDancingLinks().solve(grid: grid)
-        case .structuredNR: return StructuredDancingLinksNR().solve(grid: grid)
-        }
+        solve(grid: grid, limit: 1).first
     }
     
     /// Returns the solutions, optionally up to a limit.
@@ -158,12 +154,6 @@ class DancingLinks {
         }
         
         return solutions
-    }
-    
-    /// Returns the first solution found, or nil if no solution found.
-    /// The default search strategy selects the first column with smallest size.
-    func solve<G>(grid: G, strategy: SearchStrategy = .minimumSize) -> Solution<G.RowId>? where G: Grid {
-        solve(grid: grid, strategy: strategy, limit: 1).first
     }
     
 }
