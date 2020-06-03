@@ -100,7 +100,7 @@ public class NQueensSolver {
     /// Returns solutions of the N-Queens problem, optionally up to a limit.
     /// Default algorithm = StructuredDancingLinks.
     public static func solve(nQueens: NQueens, algorithm: DancingLinksAlgorithm = .structured, limit: Int? = nil) -> [[Square]] {
-        algorithm.solver.solve(grid: nQueens, limit: limit).map { $0.rows }
+        algorithm.solve(grid: nQueens, limit: limit).map { $0.rows }
     }
     
 }

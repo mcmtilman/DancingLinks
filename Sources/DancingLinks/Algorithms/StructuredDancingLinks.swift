@@ -71,7 +71,7 @@ fileprivate struct Store<RowId> {
     // MARK: Private stored properties
     
     // Node store.
-    private var nodes: ContiguousArray<Node>
+    private var nodes: Array<Node>
     
     // MARK: Private computed properties
     
@@ -144,37 +144,31 @@ fileprivate struct Store<RowId> {
     // MARK: Accessing
     
     // Returns the column of given node.
-    @inline(__always)
     func column(of node: NodeId) -> NodeId {
         nodes[node].column
     }
     
     // Returns the node directly below given node.
-    @inline(__always)
     func down(_ node: NodeId) -> NodeId {
         nodes[node].down
     }
     
     // Returns the node directly to the left of given node.
-    @inline(__always)
     func left(_ node: NodeId) -> NodeId {
         nodes[node].left
     }
     
     // Returns the node directly to the right of given node.
-    @inline(__always)
     func right(_ node: NodeId) -> NodeId {
         nodes[node].right
     }
     
     // Returns the node directly above given node.
-    @inline(__always)
     func up(_ node: NodeId) -> NodeId {
         nodes[node].up
     }
     
     // Returns the row reference of given node.
-    @inline(__always)
     func row(of node: NodeId) -> RowId? {
         nodes[node].row
     }
@@ -262,7 +256,6 @@ fileprivate struct Store<RowId> {
     // MARK: Private accessing
     
     // Update the column size with given amount.
-    @inline(__always)
     private mutating func updateColumnSize(of node: NodeId, with amount: Int) {
         let columnNode = column(of: node)
         
@@ -272,7 +265,6 @@ fileprivate struct Store<RowId> {
     // MARK: Private DancingLinks operations
     
     // Re-inserts the node in its row.
-    @inline(__always)
     private mutating func relinkInRow(node: NodeId) {
         let left = nodes[node].left, right = nodes[node].right
         
@@ -281,7 +273,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Re-inserts the node in its column.
-    @inline(__always)
     private mutating func relinkInColumn(node: NodeId) {
         let down = nodes[node].down, up = nodes[node].up
         
@@ -290,7 +281,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Removes the node from its row.
-    @inline(__always)
     private mutating func unlinkFromRow(node: NodeId) {
         let left = nodes[node].left, right = nodes[node].right
         
@@ -299,7 +289,6 @@ fileprivate struct Store<RowId> {
     }
     
     // Removes the node from its column.
-    @inline(__always)
     private mutating func unlinkFromColumn(node: NodeId) {
         let down = nodes[node].down, up = nodes[node].up
         
@@ -331,12 +320,14 @@ fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId,
     case .minimumSize: return store.smallestColumn(header: header)
     }
 }
-    
+
 
 /**
  Implementation of the DancingLinks algorithm using structs for nodes.
  */
-class StructuredDancingLinks: DancingLinks {
+final class StructuredDancingLinks: DancingLinks {
+            
+    // MARK: Solving
     
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
@@ -389,11 +380,14 @@ class StructuredDancingLinks: DancingLinks {
     
 }
 
+    
 /**
  Non-recursive implementation of the DancingLinks algorithm using structs for nodes.
  Experimental (cf. article *Non-Recursive Dancing Links* by Jan Magne Tjensvold).
  */
-class StructuredDancingLinksNR: DancingLinks {
+final class StructuredDancingLinksNR: DancingLinks {
+    
+    // MARK: Solving
     
     /// Reads a sparse grid of rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.

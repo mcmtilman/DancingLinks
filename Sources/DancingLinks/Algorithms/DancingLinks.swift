@@ -8,15 +8,31 @@
 
 /**
  Identifies the algorithm implementation to use.
+ Note. Replaced *solve* computed property returning the requested class instance as this affected performance in Swift 5.2 and 5.3.
 */
 public enum DancingLinksAlgorithm {
+    
     case classy, structured, structuredNR
     
-    var solver: DancingLinks {
+    // MARK: Solving
+    
+    /// Returns the first solution found, or nil if no solution found.
+    /// Uses the minimum column size search strategy.
+    func solve<G>(grid: G) -> Solution<G.RowId>? where G: Grid {
         switch self {
-        case .classy: return ClassyDancingLinks()
-        case .structured: return StructuredDancingLinks()
-        case .structuredNR: return StructuredDancingLinksNR()
+        case .classy: return ClassyDancingLinks().solve(grid: grid)
+        case .structured: return StructuredDancingLinks().solve(grid: grid)
+        case .structuredNR: return StructuredDancingLinksNR().solve(grid: grid)
+        }
+    }
+    
+    /// Returns the solutions, optionally up to a limit.
+    /// Uses the minimum column size search strategy.
+    func solve<G>(grid: G, limit: Int? = nil) -> [Solution<G.RowId>] where G: Grid {
+        switch self {
+        case .classy: return ClassyDancingLinks().solve(grid: grid, limit: limit)
+        case .structured: return StructuredDancingLinks().solve(grid: grid, limit: limit)
+        case .structuredNR: return StructuredDancingLinksNR().solve(grid: grid, limit: limit)
         }
     }
     
@@ -106,9 +122,12 @@ class SearchState {
 
 /**
  Superclass for the DancingLinks implementations (cf. Donald Knuth's Algorithm X).
- Note. This was originally a protocol, but this caused some performance problems.
+ Note. This was originally a protocol, but this caused some performance problems. May revert to protocol in Swift 5.3.
+ Note. Convenience solvers no longer in extension, as it affects performance in Swift 5.2 and 5.3.
  */
 class DancingLinks {
+    
+    // MARK: Solving
     
     /// Reads a grid of sparse rows and injects each solution and the search state in the handler.
     /// Grid and solution use the same type of row identification.
@@ -120,13 +139,7 @@ class DancingLinks {
         fatalError("Abstract method must be overridden")
     }
     
-}
-
-
-/**
- Convenience solvers.
- */
-extension DancingLinks {
+    // MARK: Convenience solving
     
     /// Returns the solutions, optionally up to a limit.
     /// The default search strategy selects the first column with smallest size.

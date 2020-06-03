@@ -56,8 +56,6 @@ The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode 
 
 # Note for Swift 5.2 and 5.3 toolchains
 
-Using XCode 10.4 with the built-in 5.2 toolchain results in a dramatic performance decrease, in particular for the struct-based implementation, which is 20 times slower in the reference benchmark.
+Using XCode 10.4 with the built-in 5.2 toolchain resulted in a dramatic performance decrease, in particular for the struct-based implementation, which was 20 times slower in the reference benchmark. The Swift 5.3 Development Snapshot 2020-05-31 toolchain improved performance somewhat, but the algorithm was still several times slower. It seems that the 5.2 and 5.3 toolchains specialized the generic *solve* method less aggressively than 5.1.
 
-To mitigate the 5.2 overhead a bit, some changes were made to the *StructuredDancingLinks* implementation, most notably by using a *ContiguousArray* to store the nodes, in addition to explicit @inline(__always) annotations.
-
-The Swift 5.3 Development Snapshot 2020-05-31 toolchain further improves performance, but it is still 5 times slower than Swift 5.1. It seems that the 5.2 and 5.3 toolchains specialize the generic *solve* method less aggressively than 5.1.
+The *DancingLinksAlgorithm* enum solver interface has been redesigned to remedy this problem. Performance is now comparable with the 5.1 results.

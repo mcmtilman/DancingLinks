@@ -14,40 +14,6 @@ import DancingLinks
  */
 class SudokuSolverPerformanceTests: XCTestCase {
     
-    // Test solving and validating the evil sudoku using 'native' SudokuDancingLinks without generics.
-    func testSolveNativeEvilSudoku() {
-        let evil = Sudoku.evil
-        
-        measure {
-            for _ in 1 ... 10 {
-                guard let solution = SudokuSolver.solveNative(sudoku: evil) else { return XCTFail("Nil solution") }
-                guard solution.isComplete() else { return XCTFail("Incomplete solution") }
-            }
-        }
-    }
-    
-    // Test solving and validating the evil sudoku using 'minimal' 'DancingLinks'.
-    func testSolveMinimalEvilSudoku() {
-        let evil = Sudoku(string: """
-            812753649
-            943682175
-            675491283
-            154237896
-            369845721
-            287169534
-            521974368
-            438526917
-            796318452
-            """)!
-
-        measure {
-            for _ in 1 ... 10 {
-                guard let solution = SudokuSolver.solveMinimal(sudoku: evil) else { return XCTFail("Nil solution") }
-                guard solution.isComplete() else { return XCTFail("Incomplete solution") }
-            }
-        }
-    }
-    
     // Test solving and validating the evil sudoku using ClassyDancingLinks.
     func testSolveClassyEvilSudoku() {
         let evil = Sudoku.evil
@@ -310,8 +276,6 @@ extension SudokuSolverPerformanceTests {
 extension SudokuSolverPerformanceTests {
     
     static var allTests = [
-        ("testSolveNativeEvilSudoku", testSolveNativeEvilSudoku),
-        ("testSolveMinimalEvilSudoku", testSolveMinimalEvilSudoku),
         ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
         ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
         ("testSolveNonRecursiveStructuredEvilSudoku", testSolveNonRecursiveStructuredEvilSudoku),
