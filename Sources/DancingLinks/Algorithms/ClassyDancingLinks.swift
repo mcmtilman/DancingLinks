@@ -163,7 +163,7 @@ fileprivate class Node<RowId> {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    private (set) var down, left, right, up: Node!
+    private (set) unowned(unsafe) var down, left, right, up: Node!
     
     // MARK: Private initializing
     

@@ -59,3 +59,5 @@ The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode 
 Using XCode 10.4 with the built-in 5.2 toolchain resulted in a dramatic performance decrease, in particular for the struct-based implementation, which was 20 times slower in the reference benchmark. The Swift 5.3 Development Snapshot 2020-05-31 toolchain improved performance somewhat, but the algorithm was still several times slower. It seems that the 5.2 and 5.3 toolchains specialized the generic *solve* method less aggressively than 5.1.
 
 The *DancingLinksAlgorithm* enum solver interface has been redesigned to remedy this problem. Performance is now comparable with the 5.1 results.
+
+When we declare the left / right / up / down links of a node to be *unowned(unsafe)*, performance of the class-based implementation improves to 5.8 ms, at least for the 5.1 toolchain. Declaring additional properties like a node's column as well as some of the node iterator's properties to be *unowned(unsafe)* further improves performance to less than 4 ms, but then the 5.3 toolchain performance degrades considerably.
