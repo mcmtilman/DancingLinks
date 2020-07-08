@@ -163,20 +163,20 @@ fileprivate class Node<RowId> {
     
     // Row and column properties forming horizontal and vertical doubly-linked lists.
     // Not nil after initialization until explicit release.
-    private (set) unowned(unsafe) var down, left, right, up: Node!
+    private (set) unowned(unsafe) var left, right, down, up: Node!
     
     // MARK: Private initializing
     
     // Initializes the linked node properties to this node.
     private init() {
-        (left, down, right, up) = (self, self, self, self)
+        (left, right, down, up) = (self, self, self, self)
     }
     
     // MARK: Releasing
     
     // Clears the links to other nodes.
     func release() {
-        (left, down, right, up, column) = (nil, nil, nil, nil, nil)
+        (left, right, down, up, column) = (nil, nil, nil, nil, nil)
     }
     
     // MARK: Constructing grid
@@ -241,7 +241,7 @@ extension Node {
     // * along the row nodes (left, right)
     // * along the column nodes (down, up).
     enum Direction {
-        case down, left, right, up
+        case left, right, down, up
     }
     
     // Calculates the next node from the current node.
@@ -250,37 +250,44 @@ extension Node {
         
         // MARK: Private stored properties
         
-        // Returns the node's next node in the iterator's direction.
-        private let nextNode: (Node) -> Node
+        // Returns the iterator's direction.
+        private let direction: Direction
+
+        // Start node. Iteration stops when next node reaches start again.
+        private unowned(unsafe) let start: Node
         
-        // Start node. Iteration stops when nextNode === start.
-        private let start: Node
-        
-        // Current node.
-        private var node: Node
+        // Next node.
+        private unowned(unsafe) var node: Node
         
         // MARK: Initializing
         
-        // Initializes the iterator with a start (also end) node, and a function computing the next node.
+        // Initializes the iterator with a start (also end) node, and the direction.
         init(_ start: Node, _ direction: Direction) {
             self.start = start
-            self.node = start
-            
             switch direction {
-            case .down: nextNode = { $0.down }
-            case .left: nextNode = { $0.left }
-            case .right: nextNode = { $0.right }
-            case .up: nextNode = { $0.up }
+            case .left: self.node = start.left
+            case .right: self.node = start.right
+            case .down: self.node = start.down
+            case .up: self.node = start.up
             }
+            self.direction = direction
         }
         
         // MARK: Iterating
         
-        // Returns the next node or nil when we arrive at the start node.
+        // Returns the next node or nil when we have arrived at the start node.
         mutating func next() -> Node? {
-            node = nextNode(node)
-            
-            return node === start ? nil : node
+            guard node !== start else { return nil }
+            defer {
+                switch direction {
+                case .left: node = node.left
+                case .right: node = node.right
+                case .down: node = node.down
+                case .up: node = node.up
+                }
+            }
+
+            return node
         }
     }
     
