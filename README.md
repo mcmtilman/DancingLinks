@@ -62,4 +62,4 @@ The *DancingLinksAlgorithm* enum solver interface has been redesigned to remedy 
 
 # ClassyDancingLinks tweaking
 
-When we declare the *left* / *right* / *down* / *up* properties of a node to be *unowned(unsafe)*, in addition to similar (and some other) tweaking of the *NodeIterator* code, performance of the class-based implementation improves to 3.8 ms for the 5.1 toolchain, and to 7.3 respectively 7 ms for the 5.2 (Xcode 10.5) and 5.3 toolchains.
+When we declare the *left* / *right* / *down* / *up* properties of a node to be *unowned(unsafe)*, in addition to similar (and some other) tweaking of the *NodeIterator* and *smallestColumn* code, performance of the class-based implementation improves to 1.9 ms for the 5.1 toolchain, and to 6.4 respectively 6.2 ms for the 5.2 (Xcode 10.5) and 5.3 toolchains.
