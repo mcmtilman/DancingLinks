@@ -401,17 +401,16 @@ class ClassyDancingLinks: DancingLinks {
         // the reference benchmark.
         func smallestColumn() -> Node<R>? {
             guard var column = header.right, column.column.mandatory else { return nil }
-            var columnSize = column.column.size
-            var node: Node<R> = column.right
+            guard column.column.size > 1 else { return column }
 
-            while columnSize > 1, node.column.mandatory {
-                let size = node.column.size
+            for node in column.rightNodes {
+                guard node.column.mandatory else { return column }
                 
-                if size < columnSize {
-                    column = node
-                    columnSize = size
+                switch node.column.size {
+                case ...1: return node
+                case ..<column.column.size: column = node
+                default: break
                 }
-                node = node.right
             }
             
             return column
