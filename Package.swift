@@ -11,7 +11,7 @@ let package = Package(
             targets: ["DancingLinks"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/mcmtilman/Common.git", from: "1.0.0"),
+        .package(url: "https://github.com/mcmtilman/Common.git", from: "1.1.2"),
     ],
     targets: [
         .target(
