@@ -400,16 +400,13 @@ class ClassyDancingLinks: DancingLinks {
         // Note. We could cast the nodes to Column and skip the hop through the column, but this is faster for
         // the reference benchmark.
         func smallestColumn() -> Node<R>? {
-            guard var column = header.right, column.column.mandatory else { return nil }
-            guard column.column.size > 1 else { return column }
+            var column: Node<R>?
 
-            for node in column.rightNodes {
-                guard node.column.mandatory else { return column }
+            for node in header.rightNodes {
+                guard node.column.mandatory else { break }
                 
-                switch node.column.size {
-                case ...1: return node
-                case ..<column.column.size: column = node
-                default: break
+                if node.column.size < column?.column.size ?? Int.max {
+                    column = node
                 }
             }
             

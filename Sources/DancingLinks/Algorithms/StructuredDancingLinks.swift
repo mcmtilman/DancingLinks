@@ -235,7 +235,7 @@ fileprivate struct Store<RowId> {
         guard column.id != header, column.mandatory else { return nil }
         var node = nodes[column.right]
 
-        while column.size > 1, node.mandatory {
+        while node.mandatory {
             if node.size < column.size { column = node }
             node = nodes[node.right]
         }
