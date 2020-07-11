@@ -62,6 +62,4 @@ The *DancingLinksAlgorithm* enum solver interface has been redesigned to remedy 
 
 # ClassyDancingLinks tweaking
 
-When we declare the *left* / *right* / *down* / *up* properties of a node to be *unowned(unsafe)*, in addition to similar (and some other) tweaking of the *Node.Iterator*, performance of the class-based implementation improves to 1.5 ms for the 5.1 toolchain, while the 5.3 toolchain results in 9.8 ms.
-
-Using a simple while loop instead of the node iterator in *smallestColumn* has an unexpected result: performance of the 5.3 toolchain improves, but for 5.1 the inverse is true. This seemingly unpredictable nature of various versions of the Swift compiler is becoming rather frustrating.
+When we declare the *left* / *right* / *down* / *up* properties of a node to be *unowned(unsafe)*, in addition to similar (and some other) tweaking of the *Node.Iterator*, performance of the class-based implementation improves to 1.5 ms for the 5.1 toolchain, while the 5.3 toolchain results in 9.8 ms (of which 5.5 ms is due to safety checks, which can be disabled in the build settings).
