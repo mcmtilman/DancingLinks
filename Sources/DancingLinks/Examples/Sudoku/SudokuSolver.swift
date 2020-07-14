@@ -46,13 +46,14 @@ extension Sudoku: Grid {
     /// Generates one row for non-empty cells.
     func generateRows(consume: (Cell, Int...) -> ()) {
         let rows = dimensions.rows, columns = dimensions.columns
+        let allOptions = BitSet(1 ... size)
         let givens = collectValues(rows, columns, size)
         
         for row in 0 ..< size {
             for column in 0 ..< size {
                 let index = row * size + column
                 let givens = givens.rows[row].union(givens.columns[column].union(givens.boxes[row / rows * rows + column / columns]))
-                let options = values[index].map { BitSet($0) } ?? BitSet(1 ... size).subtracting(givens)
+                let options = values[index].map { BitSet($0) } ?? allOptions.subtracting(givens)
                 
                 for value in options {
                     let rowId = Cell(index: index, value: value)
