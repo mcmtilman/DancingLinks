@@ -334,7 +334,7 @@ final class StructuredDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
         var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
@@ -394,7 +394,7 @@ final class StructuredDancingLinksNR: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
         var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)

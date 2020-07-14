@@ -35,7 +35,7 @@ fileprivate struct MockGrid: Grid {
 // Each solution contains all the rows in input order.
 fileprivate class MockDancingLinks: DancingLinks {
     
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         let state = SearchState()
         var rows = [G.RowId]()
         

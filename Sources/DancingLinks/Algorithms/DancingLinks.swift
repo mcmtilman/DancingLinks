@@ -121,7 +121,7 @@ class SearchState {
  Note. This was originally a protocol, but this caused some performance problems. May revert to protocol in Swift 5.3.
  Note. Convenience solvers no longer in extension, as it affects performance in Swift 5.2 and 5.3.
  */
-class DancingLinks {
+protocol DancingLinks {
     
     // MARK: Solving
     
@@ -130,14 +130,20 @@ class DancingLinks {
     /// The algorithm should stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler stops the search by marking the search state as terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    /// Abstract method, must be overridden in subclasses.
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
-        fatalError("Abstract method must be overridden")
-    }
+    /// Abstract method, must be implemented in adopting types.
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid
+    
+}
+
+
+/**
+ Convenience solvers.
+ */
+extension DancingLinks {
     
     // MARK: Convenience solving
     
-    /// Returns the solutions, optionally up to a limit.
+    /// Reads a grid of sparse rows and returns the solutions, optionally up to a limit.
     /// The default search strategy selects the first column with smallest size.
     func solve<G>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<G.RowId>] where G: Grid {
         var solutions = [Solution<G.RowId>]()

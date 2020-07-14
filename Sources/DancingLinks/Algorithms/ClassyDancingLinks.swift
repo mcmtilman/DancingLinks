@@ -328,7 +328,7 @@ class ClassyDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    override func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
         guard grid.constraints > 0 else { return }
         
         let header = makeNodes(grid: grid)
@@ -400,12 +400,13 @@ class ClassyDancingLinks: DancingLinks {
         // Note. We could cast the nodes to Column and skip the hop through the column, but this is faster for
         // the reference benchmark.
         func smallestColumn() -> Node<R>? {
-            var column: Node<R>?
-
-            for node in header.rightNodes {
+            var column: Node<R> = header.right
+            guard column.column.mandatory else { return nil }
+            
+            for node in column.rightNodes {
                 guard node.column.mandatory else { break }
                 
-                if node.column.size < column?.column.size ?? Int.max {
+                if node.column.size < column.column.size {
                     column = node
                 }
             }
