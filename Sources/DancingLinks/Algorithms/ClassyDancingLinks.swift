@@ -254,11 +254,23 @@ extension Node {
         private let direction: Direction
 
         // Start node. Iteration stops when next node reaches start again.
+        // Using *unowned(unsafe)* here is slower since Swift 5.2.
+        // Reference: https://bugs.swift.org/browse/SR-13074.
+        #if swift(>=5.2)
+        private let start: Node
+        #else
         private unowned(unsafe) let start: Node
-        
+        #endif
+
         // Next node.
+        // Using *unowned(unsafe)* here is slower since Swift 5.2.
+        // Reference: https://bugs.swift.org/browse/SR-13074.
+        #if swift(>=5.2)
+        private var node: Node
+        #else
         private unowned(unsafe) var node: Node
-        
+        #endif
+
         // MARK: Initializing
         
         // Initializes the iterator with a start (also end) node, and the direction.
