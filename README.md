@@ -2,7 +2,7 @@
 
 Swift implementations of Knuth's *Dancing Links* algorithm (see also *DLX* and *Algorithm X*).
 
-# Algorithms
+# Algorithm implementations
 
 ## Scala and Pharo implementations
 
@@ -18,19 +18,21 @@ An initial, straightforward implementation was first developed in *Scala* based 
     ..85...1.
     .9....4..
 
-A straightforward port to *Pharo* resulted in about 3.5 ms for solving the same sudoku, much better than expected.
+A straightforward port to *Pharo* resulted in about 3.5 ms for solving the same sudoku, which was better than expected.
 
-Note that both the Pharo and Scala implementations assumed a regular 9-by-9 grid sudoku, which simplified some parts of the code. These implementations also did not support optional constraints.
+### Note
 
-## Pure Swift implementations
+The Java / Scala and Pharo implementations assumed a regular 9-by-9 grid sudoku, which simplified some parts of the code. These implementations also did not support *optional constraints*.
 
-The *ClassyDancingLinks* algorithm also uses classes to represent the nodes of the Dancing Links grid. The grid is a sparse implementation of a constraint matrix, where the elements (nodes) are connected to other nodes in the same row and column by means of doubly-linked lists. Once the grid is set up, the bulk of the computation of the Dancing Links algorithm consists in unlinking and relinking nodes from and to the lists, resulting in constant updates of object references. Since ARC does not deal well with cycles in the context of this algorithm, the choice was made to not use weak references (some tests actually indicated a substantial performance loss when using weak references). Instead, the algorithm keeps track of the nodes in the grid using strong references, and explicitly releases the grid nodes at the end. This implementation takes about 7.5 ms for the included evil sudoku performance test case.
+## Swift implementations
 
-The *StructuredDancingLinks* algorithm is struct-based, and sort of implements its own memory management. A *node store* manages the links between the struct nodes (links are just indices in the node store array). This algorithm also foregoes simple iterator abstractions to loop over the doubly-linked lists. This algorithm is significantly faster than *ClassyDancingLinks*, requiring about 1.1 ms to find the evil sudoku solution. *StructuredDancingLinksNR*, an experimental non-recursive implementation of this algorithm, reduces this time slightly further to about 1 ms.
+The *ClassyDancingLinks* algorithm uses classes to represent the nodes of the Dancing Links grid. The grid is a sparse implementation of a constraint matrix, where the elements (nodes) are connected to other nodes in the same row and column by means of doubly-linked lists. Once the grid is set up, the bulk of the computation of the Dancing Links algorithm consists in unlinking and relinking nodes from and to the lists, resulting in constant updates of object references. Since ARC does not deal well with cycles in the context of this algorithm, the choice was made to not use *weak* or *unowned* references (given the performance loss). Instead, the algorithm keeps track of the nodes in the grid using *strong* references upon creation, separate from the actual links, and explicitly releases the grid nodes at the end. The links themselves originally used strong references, but this was later replaced by *unowned(unsafe)* references.
 
-Both benchmarks measure the performance of the respective algorithms to find the solution for the evil sudoku. Each solution is tested for *correctness*: does the solution comply with the rules of a valid sudoku? This validation is taken care of by the sudoku initializer. Whether the solution is also *complete* (have all empty cells in the sudoku been assigned a number), is not verified by default. When we included this completeness test in the benchmarks, the results of both algorithms changed spectacularly. Performance of the class-based implementation dropped to about 10 ms, whereas the struct-based implementation suddenly required 35 ms. Changing the *DancingLinks* protocol to a ("abstract") superclass of both implementations fixed this problem.
+This implementation now takes about 1.1 ms for the evil sudoku performance test case, using Swift 5.1. Since several steps in the algorithm require traversing one of the linked lists in a given direction, an iterator was added to abstract the traversal process (similar to the Scala implementation). This iterator also uses unowned(unsafe) references, at least for Swift 5.1. It seems that Swift 5.2 and 5.3 do not properly handle unowned(unsafe) references, so for now the iterator uses strong references from Swift 5.2 onwards. With this approach Swift 5.3 takes 6.2 ms to solve the evil sudoku.
 
-Implementing a version of the algorithm in Swift that approximates the performance of the Scala solution clearly turned out to be less straightforward than expected.
+The *StructuredDancingLinks* algorithm is struct-based, and sort of implements its own memory management. A *node store* manages the links between the struct nodes (links are just indices in the node store array). This algorithm also foregoes iterator abstractions to traverse the linked lists. This algorithm is faster than *ClassyDancingLinks* and requires about 0.9 ms to find the evil sudoku solution (Swift 5.1 / 5.3). *StructuredDancingLinksNR*, an experimental non-recursive implementation of this algorithm, reduces this time slightly further to about 0.8 ms.
+
+Implementing a version of the algorithm in Swift that approximates the performance of the Scala solution turned out to be much less straightforward than expected. One of the problems was the inconsistency of results between different versions of Swift. For instance, the struct-based implementation became about 20 times slower when moving from Swift 5.1 to 5.2. It seemed that Swift 5.2 and 5.3 no longer specialized some of the generic functions calls, requiring a small (and less elegant) rewrite of the code. Another issue relates to using unsafe constructs - in this case unowned(unsafe) references - in the class-based implementation.
 
 # Examples
 
@@ -48,18 +50,8 @@ This example illustrates support for optional constraints.
 
 # Test setup
 
-All benchmarks used release builds with full enforcement of exclusive access to memory and safety checks enabled, executing on a 4.2 GHz Intel Core i7.
+All benchmarks used release builds with whole module compilation, full enforcement of exclusive access to memory and safety checks enabled, executing on a iMac 4.2 GHz Intel Core i7.
 
 # Requirements
 
-The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 XCode toolchain and XCode XCode 11.0 beta 2.
-
-# Note for Swift 5.2 and 5.3 toolchains
-
-Using XCode 10.4 with the built-in 5.2 toolchain resulted in a dramatic performance decrease, in particular for the struct-based implementation, which was 20 times slower in the reference benchmark. The Swift 5.3 Development Snapshot 2020-06-13 toolchain improved performance somewhat, but the algorithm was still several times slower. It seems that the 5.2 and 5.3 toolchains specialized the generic *solve* method less aggressively than 5.1.
-
-The *DancingLinksAlgorithm* enum solver interface has been redesigned to remedy this problem. Performance is now more comparable with the 5.1 results.
-
-# ClassyDancingLinks tweaking
-
-When we declare the *left* / *right* / *down* / *up* properties of a node to be *unowned(unsafe)*, in addition to similar (and some other) tweaking of the *Node.Iterator*, performance of the class-based implementation improves to 1.1 ms for the 5.1 toolchain, while the 5.3 toolchain results in 6.2 ms.
+The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 toolchain and XCode 11.0 beta 2. Later, tests were performed using XCode 11.5 (Swift 5.2.4), as well as Xcode 11.5 with the Swift 5.3 Development Snapshot 2020-06-13 toolchain.
