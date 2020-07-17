@@ -13,42 +13,39 @@ public enum DancingLinksAlgorithm {
     
     case classy, structured, structuredNR
     
+    // Type-erased DancingLinks implementation.
+    struct Erasure<G>: DancingLinks where G: Grid {
+        
+        // MARK: Private stored properties
+        
+        // Solver method of the wrapped implementation.
+        private let solve: (G, SearchStrategy, (Solution<G.RowId>, SearchState) -> ()) -> ()
+        
+        // MARK: Private initializing
+        
+        // Wraps given algorithm.
+        fileprivate init<A>(_ algorithm: A) where A: DancingLinks, A.G == G {
+            solve = algorithm.solve
+        }
+        
+        // MARK: Solving
+        
+        /// Applies the wrapped algorithm.
+        func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
+            solve(grid, strategy, handler)
+        }
+        
+    }
+
     // MARK: Resolving implementations
     
     // Answers the implementation for given algorithm.
-    func implementation<G>() -> AnyDancingLinks<G> where G: Grid {
+    func implementation<G>() -> Erasure<G> where G: Grid {
         switch self {
-        case .classy: return AnyDancingLinks(ClassyDancingLinks())
-        case .structured: return AnyDancingLinks(StructuredDancingLinks())
-        case .structuredNR: return AnyDancingLinks(StructuredDancingLinksNR())
+        case .classy: return Erasure(ClassyDancingLinks())
+        case .structured: return Erasure(StructuredDancingLinks())
+        case .structuredNR: return Erasure(StructuredDancingLinksNR())
         }
-    }
-    
-}
-
-
-/**
- Type-erased algorithm implementation wrapper.
- */
-struct AnyDancingLinks<G>: DancingLinks where G: Grid {
-    
-    // MARK: Private stored properties
-    
-    // Solver method of the wrapped implementation.
-    private let solve: (G, SearchStrategy, (Solution<G.RowId>, SearchState) -> ()) -> ()
-    
-    // MARK: Initializing
-    
-    /// Wraps given algorithm.
-    init<A>(_ algorithm: A) where A: DancingLinks, A.G == G {
-        solve = algorithm.solve
-    }
-    
-    // MARK: Solving
-    
-    /// Applies the wrapped algorithm.
-    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
-        solve(grid, strategy, handler)
     }
     
 }
@@ -136,9 +133,7 @@ class SearchState {
 
 
 /**
- Superclass for the DancingLinks implementations (cf. Donald Knuth's Algorithm X).
- Note. This was originally a protocol, but this caused some performance problems. May revert to protocol in Swift 5.3.
- Note. Convenience solvers no longer in extension, as it affects performance in Swift 5.2 and 5.3.
+ Protocol for the DancingLinks implementations (cf. Donald Knuth's Algorithm X).
  */
 protocol DancingLinks {
     
