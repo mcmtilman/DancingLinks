@@ -331,7 +331,7 @@ extension Node {
 /**
  Implementation of the DancingLinks algorithm using classes for nodes.
  */
-class ClassyDancingLinks: DancingLinks {
+final class ClassyDancingLinks<G>: DancingLinks where G: Grid {
         
     // MARK: Solving
     
@@ -340,7 +340,7 @@ class ClassyDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
         guard grid.constraints > 0 else { return }
         
         let header = makeNodes(grid: grid)
@@ -377,7 +377,7 @@ class ClassyDancingLinks: DancingLinks {
     // MARK: Private constructing grid
     
     // For each row in the grid, adds a node with given row id for each column in the row.
-    private func makeNodes<G>(grid: G) -> Node<G.RowId>.Header where G: Grid {
+    private func makeNodes(grid: G) -> Node<G.RowId>.Header {
         let columns = (0 ..< grid.constraints + grid.optionalConstraints).map { c in Node<G.RowId>.Column(mandatory: c < grid.constraints) }
         let header = Node<G.RowId>.Header(columns: columns)
 

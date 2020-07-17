@@ -325,7 +325,7 @@ fileprivate func selectColumn<R>(store: inout Store<R>, header: Store<R>.NodeId,
 /**
  Implementation of the DancingLinks algorithm using structs for nodes.
  */
-final class StructuredDancingLinks: DancingLinks {
+final class StructuredDancingLinks<G>: DancingLinks where G: Grid {
             
     // MARK: Solving
     
@@ -334,7 +334,7 @@ final class StructuredDancingLinks: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
         guard grid.constraints > 0 else { return }
         
         var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)
@@ -385,7 +385,7 @@ final class StructuredDancingLinks: DancingLinks {
  Non-recursive implementation of the DancingLinks algorithm using structs for nodes.
  Experimental (cf. article *Non-Recursive Dancing Links* by Jan Magne Tjensvold).
  */
-final class StructuredDancingLinksNR: DancingLinks {
+final class StructuredDancingLinksNR<G>: DancingLinks where G: Grid {
     
     // MARK: Solving
     
@@ -394,7 +394,7 @@ final class StructuredDancingLinksNR: DancingLinks {
     /// The algorithm must stop when the search space has been exhausted or when the handler instructs it to stop.
     /// The handler can set the search state to terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
         guard grid.constraints > 0 else { return }
         
         var store = Store<G.RowId>(size: 2 * (grid.constraints + grid.optionalConstraints) + 1)

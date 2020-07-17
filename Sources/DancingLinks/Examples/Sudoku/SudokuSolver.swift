@@ -101,7 +101,7 @@ public class SudokuSolver {
     /// Does not verify the existence of additional solutions.
     /// Default algorithm = StructuredDancingLinks.
     public static func solve(sudoku: Sudoku, algorithm: DancingLinksAlgorithm = .structured) -> Sudoku? {
-        guard let solution = algorithm.solve(grid: sudoku) else { return nil }
+        guard let solution = algorithm.implementation().solve(grid: sudoku) else { return nil }
         var values = [Int?](repeating: nil, count: sudoku.cells)
         
         for row in solution.rows {

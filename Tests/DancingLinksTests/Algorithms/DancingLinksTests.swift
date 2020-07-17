@@ -33,9 +33,9 @@ fileprivate struct MockGrid: Grid {
 
 // Mock algorithm returning a solution for each grid row read.
 // Each solution contains all the rows in input order.
-fileprivate class MockDancingLinks: DancingLinks {
+fileprivate class MockDancingLinks<G>: DancingLinks where G: Grid {
     
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid {
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
         let state = SearchState()
         var rows = [G.RowId]()
         
@@ -58,7 +58,7 @@ class DancingLinksTests: XCTestCase {
     
     // MARK: Covenience properties
     
-    private let dlx = MockDancingLinks()
+    private let dlx = MockDancingLinks<MockGrid>()
     
     private let grid = MockGrid(rows: 5)
     

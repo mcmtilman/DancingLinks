@@ -8,28 +8,47 @@
 
 /**
  Identifies the algorithm implementation to use.
- Note. Replaced *solve* computed property returning the requested class instance as this affected performance in Swift 5.2 and 5.3.
-*/
+ */
 public enum DancingLinksAlgorithm {
     
     case classy, structured, structuredNR
     
-    // MARK: Solving
+    // MARK: Resolving implementations
     
-    /// Returns the first solution found, or nil if no solution found.
-    /// Uses the minimum column size search strategy.
-    func solve<G>(grid: G) -> Solution<G.RowId>? where G: Grid {
-        solve(grid: grid, limit: 1).first
+    // Answers the implementation for given algorithm.
+    func implementation<G>() -> AnyDancingLinks<G> where G: Grid {
+        switch self {
+        case .classy: return AnyDancingLinks(ClassyDancingLinks())
+        case .structured: return AnyDancingLinks(StructuredDancingLinks())
+        case .structuredNR: return AnyDancingLinks(StructuredDancingLinksNR())
+        }
     }
     
-    /// Returns the solutions, optionally up to a limit.
-    /// Uses the minimum column size search strategy.
-    func solve<G>(grid: G, limit: Int? = nil) -> [Solution<G.RowId>] where G: Grid {
-        switch self {
-        case .classy: return ClassyDancingLinks().solve(grid: grid, limit: limit)
-        case .structured: return StructuredDancingLinks().solve(grid: grid, limit: limit)
-        case .structuredNR: return StructuredDancingLinksNR().solve(grid: grid, limit: limit)
-        }
+}
+
+
+/**
+ Type-erased algorithm implementation wrapper.
+ */
+struct AnyDancingLinks<G>: DancingLinks where G: Grid {
+    
+    // MARK: Private stored properties
+    
+    // Solver method of the wrapped implementation.
+    private let solve: (G, SearchStrategy, (Solution<G.RowId>, SearchState) -> ()) -> ()
+    
+    // MARK: Initializing
+    
+    /// Wraps given algorithm.
+    init<A>(_ algorithm: A) where A: DancingLinks, A.G == G {
+        solve = algorithm.solve
+    }
+    
+    // MARK: Solving
+    
+    /// Applies the wrapped algorithm.
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
+        solve(grid, strategy, handler)
     }
     
 }
@@ -123,6 +142,8 @@ class SearchState {
  */
 protocol DancingLinks {
     
+    associatedtype G where G: Grid
+    
     // MARK: Solving
     
     /// Reads a grid of sparse rows and injects each solution and the search state in the handler.
@@ -131,7 +152,7 @@ protocol DancingLinks {
     /// The handler stops the search by marking the search state as terminated.
     /// The search strategy may affect the performance and the order in which solutions are generated.
     /// Abstract method, must be implemented in adopting types.
-    func solve<G>(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) where G: Grid
+    func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ())
     
 }
 
@@ -145,7 +166,7 @@ extension DancingLinks {
     
     /// Reads a grid of sparse rows and returns the solutions, optionally up to a limit.
     /// The default search strategy selects the first column with smallest size.
-    func solve<G>(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<G.RowId>] where G: Grid {
+    func solve(grid: G, strategy: SearchStrategy = .minimumSize, limit: Int? = nil) -> [Solution<G.RowId>] {
         var solutions = [Solution<G.RowId>]()
 
         solve(grid: grid, strategy: strategy) { solution, state in
@@ -162,4 +183,10 @@ extension DancingLinks {
         return solutions
     }
     
+    /// Returns the first solution found, or nil if no solution found.
+    /// Uses the minimum column size search strategy.
+    func solve(grid: G) -> Solution<G.RowId>? {
+        solve(grid: grid, limit: 1).first
+    }
+
 }
