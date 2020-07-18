@@ -13,24 +13,24 @@ public enum DancingLinksAlgorithm {
     
     case classy, structured, structuredNR
     
-    // Type-erased DancingLinks implementation.
-    struct Erasure<G>: DancingLinks where G: Grid {
+    // Wraps the solve function of a concrete DancingLinks implementation.
+    struct Solver<G>: DancingLinks where G: Grid {
         
         // MARK: Private stored properties
         
-        // Solver method of the wrapped implementation.
+        // Solver method of the actual implementation.
         private let solve: (G, SearchStrategy, (Solution<G.RowId>, SearchState) -> ()) -> ()
         
         // MARK: Private initializing
         
-        // Wraps given algorithm.
-        fileprivate init<A>(_ algorithm: A) where A: DancingLinks, A.G == G {
-            solve = algorithm.solve
+        // Initialize the solve function.
+        fileprivate init<D>(_ dancingLinks: D) where D: DancingLinks, D.G == G {
+            solve = dancingLinks.solve
         }
         
         // MARK: Solving
         
-        /// Applies the wrapped algorithm.
+        /// Applies the wrapped solve function.
         func solve(grid: G, strategy: SearchStrategy, handler: (Solution<G.RowId>, SearchState) -> ()) {
             solve(grid, strategy, handler)
         }
@@ -39,12 +39,12 @@ public enum DancingLinksAlgorithm {
 
     // MARK: Resolving implementations
     
-    // Answers the implementation for given algorithm.
-    func implementation<G>() -> Erasure<G> where G: Grid {
+    // Answers a DancingLinks solver for given algorithm.
+    func solver<G>() -> Solver<G> where G: Grid {
         switch self {
-        case .classy: return Erasure(ClassyDancingLinks())
-        case .structured: return Erasure(StructuredDancingLinks())
-        case .structuredNR: return Erasure(StructuredDancingLinksNR())
+        case .classy: return Solver(ClassyDancingLinks())
+        case .structured: return Solver(StructuredDancingLinks())
+        case .structuredNR: return Solver(StructuredDancingLinksNR())
         }
     }
     
