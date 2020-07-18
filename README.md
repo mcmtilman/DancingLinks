@@ -42,7 +42,7 @@ The sudoku example supports creating sudokus with other dimensions than the regu
 
 A valid sudoku puzzle can be solved with either of the two Swift algorithms, the struct-based algorithm being the default.
 
-The Dancing Links algorithms can also be used to find multiple sudoku solutions by starting from an empty sudoku. The dedicated *SudokuGenerator* algorithm, which uses a straightforward random placement implementation, is nearly an order of magnitude faster.
+The Dancing Links algorithms can also be used to find multiple sudoku solutions by starting from an empty sudoku. The dedicated *SudokuGenerator* algorithm, which uses a straightforward random placement implementation, is a few times faster than the (first) solution found by DancingLinks. Note that the available DancingLinks search strategies currently do not contain a randomizer option.
 
 ## N-Queens problem
 
