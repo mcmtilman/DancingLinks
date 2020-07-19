@@ -22,35 +22,33 @@ public class RandomSudokuGenerator {
     
     /// Generates a random solution for sudokus with given dimensions
     public func generateSolution(rows: Int = 3, columns: Int = 3) -> Sudoku? {
-        let size = rows * columns, cells = size * size
-        var rowOptions = [BitSet](repeating: BitSet(1 ... size), count: size)
-        var columnOptions = [BitSet](repeating: BitSet(1 ... size), count: size)
-        var boxOptions = [BitSet](repeating: BitSet(1 ... size), count: size)
-        var values = [Int?](repeating: nil, count: cells)
-        
-        func generate(_ cell: Int) -> Sudoku? {
-            guard cell < cells else { return Sudoku(values: values, rows: rows, columns: columns) }
+            let size = rows * columns, cells = size * size
+            var gridOptions = [BitSet](repeating: BitSet(1 ... size), count: size * 3)
+            var values = [Int?](repeating: nil, count: cells)
             
-            let row = cell / size, column = cell % size, box = row / rows * rows + column / columns
-            let saved = (row: rowOptions[row], column: columnOptions[column], box: boxOptions[box])
-            var options = saved.row.intersection(saved.column).intersection(saved.box)
-            
-            while let value = options.randomElement() {
-                values[cell] = value
-                rowOptions[row].remove(value)
-                columnOptions[column].remove(value)
-                boxOptions[box].remove(value)
-                if let solution = generate(cell + 1) {
-                    return solution
+            func generate(_ cell: Int) -> Sudoku? {
+                guard cell < cells else { return Sudoku(values: values, rows: rows, columns: columns) }
+                
+                let row = cell / size, temp = cell % size, column = temp + size, box = row / rows * rows + temp / columns + size * 2
+                let saved = (gridOptions[row], gridOptions[column], gridOptions[box])
+                var cellOptions = saved.0.intersection(saved.1).intersection(saved.2)
+                
+                while let value = cellOptions.randomElement() {
+                    values[cell] = value
+                    for i in [row, column, box] {
+                        gridOptions[i].remove(value)
+                    }
+                    if let solution = generate(cell + 1) {
+                        return solution
+                    }
+                    (gridOptions[row], gridOptions[column], gridOptions[box]) = saved
+                    cellOptions.remove(value)
                 }
-                (rowOptions[row], columnOptions[column], boxOptions[box]) = saved
-                options.remove(value)
+                
+                return nil
             }
             
-            return nil
+            return generate(0)
         }
-        
-        return generate(0)
-    }
     
 }

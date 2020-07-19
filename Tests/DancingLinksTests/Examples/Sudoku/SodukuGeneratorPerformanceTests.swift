@@ -46,6 +46,7 @@ extension SudokuGeneratorPerformanceTests {
     
     static var allTests = [
         ("testGenerateRandomSolution", testGenerateRandomSolution),
+        ("testGenerateAndValidateRandomSolution", testGenerateAndValidateRandomSolution),
     ]
     
 }
