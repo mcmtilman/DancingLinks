@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import DancingLinks
+@testable import DancingLinks
 
 /**
  Tests solving sudokus.
@@ -268,20 +268,4 @@ extension SudokuSolverPerformanceTests {
         ..6..1..9........81.....35........86......9..9.52.6.4...861..92.....5...5..94.16.
         """
 
-}
-
-/**
- For LinuxMain.
- */
-extension SudokuSolverPerformanceTests {
-    
-    static var allTests = [
-        ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
-        ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
-        ("testSolveNonRecursiveStructuredEvilSudoku", testSolveNonRecursiveStructuredEvilSudoku),
-        ("testSolveQQWingSudokus", testSolveQQWingSudokus),
-        ("testSolveInkalaSudokus", testSolveInkalaSudokus),
-        ("testGenerateSolution", testGenerateSolution),
-    ]
-    
 }

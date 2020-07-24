@@ -9,7 +9,7 @@
 /**
  Specifies the number of queens and the size of the (square) chessboard.
  */
-public struct NQueens {
+struct NQueens {
     
     // MARK: Stored properties
     
@@ -20,7 +20,7 @@ public struct NQueens {
     
     /// Initializes the N-Queens problem for N >= 1. Fails otherwise.
     /// Default = 8.
-    public init?(number: Int = 8) {
+    init?(number: Int = 8) {
         guard number >= 1 else { return nil }
         
         self.number = number
@@ -32,17 +32,17 @@ public struct NQueens {
 /**
  A chess square.
  */
-public struct Square: Hashable {
+struct Square: Hashable {
     
     // MARK: Stored properties
     
     /// Rank and file of the square.
-    public let rank, file: Int
+    let rank, file: Int
  
     // MARK: Initializing
     
     /// Default initializer is internal.
-    public init(rank: Int, file: Int) {
+    init(rank: Int, file: Int) {
         self.rank = rank
         self.file = file
     }
@@ -93,7 +93,7 @@ extension NQueens: Grid {
 /**
  N-Queens problem solver using DancingLinks algorithm.
  */
-public class NQueensSolver {
+class NQueensSolver {
     
     // MARK: Solving N-Queens problem
     

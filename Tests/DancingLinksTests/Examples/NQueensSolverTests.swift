@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import DancingLinks
+@testable import DancingLinks
 
 /**
  Tests solving the N-Queens probleem.
@@ -77,20 +77,5 @@ class NQueensSolverTests: XCTestCase {
             }
         }
     }
-    
-}
-
-
-/**
- For LinuxMain.
- */
-extension NQueensSolverTests {
-    
-    static var allTests = [
-        ("testSolveClassyEightQueens", testSolveClassyEightQueens),
-        ("testSolveStructuredEightQueens", testSolveStructuredEightQueens),
-        ("testSolveManyQueens", testSolveManyQueens),
-        ("testNQueensSolveAll", testNQueensSolveAll),
-    ]
     
 }

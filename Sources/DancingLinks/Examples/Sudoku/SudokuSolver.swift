@@ -93,14 +93,14 @@ extension Sudoku: Grid {
 /**
  Sudoku solver using DancingLinks algorithm.
  */
-public class SudokuSolver {
+class SudokuSolver {
     
     // MARK: Solving sudokus
     
     /// Returns a solution of the sudoku, or nil if no solution found.
     /// Does not verify the existence of additional solutions.
     /// Default algorithm = StructuredDancingLinks.
-    public static func solve(sudoku: Sudoku, algorithm: DancingLinksAlgorithm = .structured) -> Sudoku? {
+    static func solve(sudoku: Sudoku, algorithm: DancingLinksAlgorithm = .structured) -> Sudoku? {
         guard let solution = algorithm.solver().solve(grid: sudoku) else { return nil }
         var values = [Int?](repeating: nil, count: sudoku.cells)
         

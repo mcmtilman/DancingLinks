@@ -111,19 +111,3 @@ class DancingLinksTests: XCTestCase {
     }
     
 }
-
-/**
- For LinuxMain.
- */
-extension DancingLinksTests {
-    
-    static var allTests = [
-        ("testSolveEmptyGenerator", testSolveEmptyGenerator),
-        ("testSolveFirst", testSolveFirst),
-        ("testSolveNegativeLimit", testSolveNegativeLimit),
-        ("testSolveNoLimit",testSolveNoLimit),
-        ("testSolvePositiveLimit", testSolvePositiveLimit),
-        ("testSolveZeroLimit", testSolveZeroLimit),
-    ]
-
-}

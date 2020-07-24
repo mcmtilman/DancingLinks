@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import DancingLinks
+@testable import DancingLinks
 
 /**
  Tests solving sudokus.
@@ -35,18 +35,5 @@ class SudokuGeneratorPerformanceTests: XCTestCase {
             }
         }
     }
-    
-}
-
-
-/**
- For LinuxMain.
- */
-extension SudokuGeneratorPerformanceTests {
-    
-    static var allTests = [
-        ("testGenerateRandomSolution", testGenerateRandomSolution),
-        ("testGenerateAndValidateRandomSolution", testGenerateAndValidateRandomSolution),
-    ]
     
 }

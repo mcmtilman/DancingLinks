@@ -11,17 +11,12 @@ import Common
 /**
  Generates sudoku solutions starting from an empty grid using random value placement.
  */
-public class RandomSudokuGenerator {
-    
-    // MARK: Initializing
-    
-    /// Default public initializer must be declared explicitly
-    public init() {}
+class RandomSudokuGenerator {
     
     // MARK: Generating
     
     /// Generates a random solution for sudokus with given dimensions
-    public func generateSolution(rows: Int = 3, columns: Int = 3) -> Sudoku? {
+    func generateSolution(rows: Int = 3, columns: Int = 3) -> Sudoku? {
         let size = rows * columns, cells = size * size
         var gridOptions = [BitSet](repeating: BitSet(1 ... size), count: size * 3)
         var values = [Int?](repeating: nil, count: cells)

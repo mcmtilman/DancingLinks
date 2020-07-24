@@ -269,23 +269,3 @@ extension SudokuSolverTests {
         """
 
 }
-
-
-/**
- For LinuxMain.
- */
-extension SudokuSolverTests {
-    
-    static var allTests = [
-        ("testCompleteGrid", testCompleteGrid),
-        ("testCompleteConstraints", testCompleteConstraints),
-        ("testEmptyConstraints", testEmptyConstraints),
-        ("testEmptyGrid", testEmptyGrid),
-        ("testGenerateSolution", testGenerateSolution),
-        ("testGivens", testGivens),
-        ("testSolveClassyEvilSudoku", testSolveClassyEvilSudoku),
-        ("testSolveStructuredEvilSudoku", testSolveStructuredEvilSudoku),
-        ("testSolveLargeSudoku", testSolveLargeSudoku),
-    ]
-
-}
