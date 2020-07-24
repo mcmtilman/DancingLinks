@@ -8,6 +8,10 @@
 
 /**
  Identifies the algorithm implementation to use.
+ Provides the public interface to solve a problem using one of the DancingLinks implementations.
+ Examples of usage can be found in `SudokuSolver` and `NQueens`.
+ Note. Since the solvers use generics, clients using this interface from within another module may suffer a performance hit
+ as the Swift compiler may not be able to properly specialize the generic type and method.
  */
 public enum DancingLinksAlgorithm {
     

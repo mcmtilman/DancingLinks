@@ -55,3 +55,7 @@ All benchmarks used release builds with whole module compilation, full enforceme
 # Requirements
 
 The code has initially been tested with the Swift 5.1 Snapshot 2019-06-28 toolchain and XCode 11.0 beta 2. Later, tests were performed using XCode 11.5 (Swift 5.2.4), as well as Xcode 11.5 with the Swift 5.3 Development Snapshot 2020-06-13 toolchain.
+
+# Note
+
+Using the public DancingLinks interface from within another module may impact performance, given the way the Swift compiler handles generic types and methods across modules.
