@@ -139,7 +139,7 @@ public class SearchState {
 /**
  Protocol for the DancingLinks implementations (cf. Donald Knuth's Algorithm X).
  */
-public protocol DancingLinks: class {
+public protocol DancingLinks: AnyObject {
     
     associatedtype G where G: Grid
     
