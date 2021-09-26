@@ -16,7 +16,8 @@ let package = Package(
     targets: [
         .target(
             name: "DancingLinks",
-            dependencies: ["Common"]),
+            dependencies: ["Common"],
+            swiftSettings: [.unsafeFlags(["-O"], .when(configuration: .debug))]),
         .testTarget(
             name: "DancingLinksTests",
             dependencies: ["DancingLinks", "Common"]),
